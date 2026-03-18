@@ -10,7 +10,7 @@ const nextConfig = withPWA({
     disableDevLogs: true,
   },
 })({
-  // TODO: Next.js configuration options will be added here
+  turbopack: {},
 })
 
 export default nextConfig;
