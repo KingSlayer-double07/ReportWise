@@ -1,0 +1,19 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Build outputs
+.next
+dist
+build
+
+# Turbo
+.turbo
+
+# Prisma
+packages/database/prisma/migrations/dev.db
