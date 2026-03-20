@@ -17,7 +17,6 @@ Built with **Next.js · NestJS · Prisma 7 · PostgreSQL (schema-per-tenant) · 
 - [Running the Apps](#running-the-apps)
 - [Database](#database)
 - [Branch Strategy](#branch-strategy)
-- [Team & Responsibilities](#team--responsibilities)
 
 ---
 
