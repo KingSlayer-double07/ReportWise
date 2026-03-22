@@ -12,6 +12,54 @@ datasource db {
   provider = "postgresql"
 }
 
+//--------------------------------------
+// ENUMS
+//--------------------------------------
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum Stream {
+  SCIENCE
+  COMMERCIAL
+  ARTS
+  NONE      //For JSS students and some shared subjects in SSS
+}
+
+enum ClassLevel {
+  JSS1
+  JSS2
+  JSS3
+  SSS1
+  SSS2
+  SSS3
+}
+
+enum TermNumber {
+  FIRST
+  SECOND
+  THIRD
+}
+
+enum SchoolStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+enum PlanTier {
+  SMALL
+  MEDIUM
+  LARGE
+  ENTERPRISE
+  COMPLIMENTARY
+}
+
 model User {
   id        String   @id @default(uuid())
   loginId   String   @unique
