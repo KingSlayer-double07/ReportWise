@@ -60,6 +60,49 @@ enum PlanTier {
   COMPLIMENTARY
 }
 
+//--------------------------------------
+// PUBLIC SCHEMA MODELS
+// Platform-level models that are not specific to any school
+// - live in the default PostgreSQL public schema.
+// Managed by SuperAdmin only.
+//--------------------------------------
+
+model School {
+  id            String          @id @default(uuid())
+  name          String
+  slug          String          @unique // will become the postgres schema name
+  status        SchoolStatus    @default(TRIAL)
+  planTier      PlanTier        @default(SMALL)
+  adminEmail     String          @unique // used for the first Admin account and for billing info
+  schemaName    String          @unique // same as slug, but with a prefix "school_"
+  studentCount   Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  lastActiveAt   DateTime
+
+  billingRecords BillingRecord[]
+}
+
+model SuperAdmin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BillingRecord {
+  id          String    @id @default(uuid())
+  schoolId    String
+  school      School    @relation(fields: [schoolId], references: [id])
+  amount      Float
+  sessionLabel String
+  studentCount Int
+  paystackRef   String?   @unique
+  paidAt        DateTime?
+  createdAt     DateTime    @default(now())
+}
+
 model User {
   id        String   @id @default(uuid())
   loginId   String   @unique
