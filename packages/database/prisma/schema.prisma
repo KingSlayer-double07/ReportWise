@@ -12,10 +12,403 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
+//--------------------------------------
+// ENUMS
+//--------------------------------------
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum Stream {
+  SCIENCE
+  COMMERCIAL
+  ARTS
+  NONE      //For JSS students and some shared subjects in SSS
+}
+
+enum ClassLevel {
+  JSS1
+  JSS2
+  JSS3
+  SSS1
+  SSS2
+  SSS3
+}
+
+enum TermNumber {
+  FIRST
+  SECOND
+  THIRD
+}
+
+enum SchoolStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+enum PlanTier {
+  SMALL
+  MEDIUM
+  LARGE
+  ENTERPRISE
+  COMPLIMENTARY
+}
+
+//--------------------------------------
+// PUBLIC SCHEMA MODELS
+// Platform-level models that are not specific to any school
+// - live in the default PostgreSQL public schema.
+// Managed by SuperAdmin only.
+//--------------------------------------
+
+model School {
+  id            String          @id @default(uuid())
+  name          String
+  slug          String          @unique // will become the postgres schema name
+  status        SchoolStatus    @default(TRIAL)
+  planTier      PlanTier        @default(SMALL)
+  adminEmail     String          @unique // used for the first Admin account and for billing info
+  schemaName    String          @unique // same as slug, but with a prefix "school_"
+  studentCount   Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  lastActiveAt   DateTime
+
+  billingRecords BillingRecord[]
+}
+
+model SuperAdmin {
   id        String   @id @default(uuid())
-  loginId   String   @unique
-  name      String?
+  email     String   @unique
+  password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model BillingRecord {
+  id          String    @id @default(uuid())
+  schoolId    String
+  school      School    @relation(fields: [schoolId], references: [id])
+  amount      Float
+  sessionLabel String
+  studentCount Int
+  paystackRef   String?   @unique
+  paidAt        DateTime?
+  createdAt     DateTime    @default(now())
+}
+
+//--------------------------------------
+// TENANT SCHEMA MODELS
+// Per-school models that are specific to each school
+// - created in each school's PostgreSQL schema by the 
+// provisioning script.
+//--------------------------------------
+
+// --- Authentication ------------------
+
+model User {
+  id        String   @id @default(uuid())
+  role      Role
+  email     String?   @unique     // Admin
+  staffId   String?   @unique     // Teacher
+  admissionNumber String?   @unique     // Student
+  password  String                  // bcrypt hash
+  mustChangePassword Boolean @default(true) // forces password change on first login
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  admin Admin?
+  teacher Teacher?
+  student Student?
+}
+
+// --- Profiles ------------------
+
+model Admin {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName String
+  lastName  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Teacher {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName String
+  lastName  String
+  classId   String? // assigned class, null if not assigned yet
+  class     Class?   @relation(fields: [classId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  promotions Promotion[]
+}
+
+model Student {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // biodata - survives across sessions and class promotions
+  firstName       String
+  lastName        String
+  middleName      String?
+  dateOfBirth     DateTime
+  gender          String
+  stateOfOrigin    String?
+  parentName      String
+  parentContact   String
+  parentEmail     String?
+  address         String?
+  photoUrl        String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  enrollments     StudentEnrollment[]
+  scores          Score[]
+  reportSheets    ReportSheet[]
+  promotions      Promotion[]
+  graduatedRecord GraduatedStudent?
+}
+
+// --- Academic Structure ------------------
+
+model Class {
+  id          String      @id @default(uuid())
+  level       ClassLevel  @unique
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  teachers    Teacher[]
+  subjects    ClassSubject[]
+  enrollments StudentEnrollment[]
+  promotionsFrom Promotion[] @relation("FromClass")
+  promotionsTo Promotion[] @relation("ToClass")
+}
+
+model Subject {
+  id          String      @id @default(uuid())
+  name        String      @unique
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  classSubjects ClassSubject[]
+  scores        Score[]
+}
+
+model ClassSubject {
+  id          String          @id @default(uuid())
+  classId     String
+  class       Class           @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subjectId   String
+  subject     Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  
+  // NONE = applies to all students in this class (all JSS, or shared subjects in SSS)
+  stream      Stream          @default(NONE)
+
+  // Marks subjects that are mandatory minimums for promotion to the next class
+  isCore      Boolean         @default(false)
+
+  createdAt   DateTime        @default(now())
+
+  @@unique([classId, subjectId, stream])
+}
+
+
+// --- Session & Term ------------------
+
+model AcademicSession {
+  id          String          @id @default(uuid())
+  label      String          @unique // e.g. "2025/2026"
+  startDate  DateTime
+  endDate    DateTime
+  isActive    Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  terms       TermRecord[]
+  enrollments StudentEnrollment[]
+  scores      Score[]
+  reportSheets ReportSheet[]
+  promotions   Promotion[]
+}
+
+model TermRecord {
+  id          String          @id @default(uuid())
+  sessionId   String
+  session     AcademicSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  term        TermNumber
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  scores      Score[]
+  reportSheets ReportSheet[]
+
+  @@unique([sessionId, term])
+}
+
+// --- Enrollment ------------------
+
+model StudentEnrollment {
+  id          String          @id @default(uuid())
+  studentId   String
+  student     Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classId     String
+  class       Class           @relation(fields: [classId], references: [id], onDelete: Cascade)
+  sessionId   String
+  session     AcademicSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  // NONE for JSS students; ARTS/SCIENCE/COMMERCIAL for SSS students
+  stream      Stream          @default(NONE)
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+
+  // A student can only be in one class per session, but can have multiple enrollment records across sessions
+  @@unique([studentId, sessionId])
+}
+
+// --- Scores ------------------
+
+model Score {
+  id          String          @id @default(uuid())
+  studentId   String
+  student     Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subjectId   String
+  subject     Subject         @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  sessionId   String
+  session     AcademicSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  termId      String
+  term        TermRecord      @relation(fields: [termId], references: [id], onDelete: Cascade)
+  
+  caScore      Float    // max 40 (40% of total score)
+  examScore    Float    // max 60 (60% of total score)
+  total        Float    // caScore + examScore, max 100
+
+  // Stored at write time from SchoolConfig - preserved here for historical record and to simplify report generation, even if the config changes later
+  grade       String
+  remark      String
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  // A student can only have one score record per subject per term per session
+  @@unique([studentId, subjectId, sessionId, termId])
+}
+
+// --- Report Sheets ------------------
+
+model ReportSheet {
+  id          String          @id @default(uuid())
+  studentId   String
+  student     Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  sessionId   String
+  session     AcademicSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  termId      String
+  term        TermRecord      @relation(fields: [termId], references: [id], onDelete: Cascade)
+  classId     String        // snapshot of class at time of generation
+
+  overallAverage Float
+  classPosition  Int
+  totalStudents   Int
+
+  // Teacher-uploaded additional info
+  teacherRemark   String?
+  attendance       Int?     // days present
+  daysInTerm      Int?      // total school days
+  conduct       String?
+
+  isGenerated   Boolean         @default(false) // false until teacher uploads scores and generates the report sheet
+  
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  // A student can only have one report sheet per term per session
+  @@unique([studentId, sessionId, termId])
+}
+
+// --- Promotion & Graduation ------------------
+
+model Promotion {
+  id          String          @id @default(uuid())
+  studentId   String
+  student     Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  fromClassId String
+  fromClass   Class           @relation("FromClass", fields: [fromClassId], references: [id], onDelete: Cascade)
+  toClassId   String
+  toClass     Class           @relation("ToClass", fields: [toClassId], references: [id], onDelete: Cascade)
+  sessionId   String
+  session     AcademicSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  teacherId   String
+  teacher     Teacher         @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  
+  computedEligible Boolean         // system-calculated pass/fail based on scores
+  promoted        Boolean           // teacher's final decision
+
+  //Set only when promotinf from JSS3 to SSS1, to determine the stream for the new session
+  newStream       Stream?
+  promotionDate DateTime      @default(now())
+
+  // One student can only have one promotion record per session
+  @@unique([studentId, sessionId])
+}
+
+model GraduatedStudent {
+  id          String          @id @default(uuid())
+  studentId   String          @unique
+  student     Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  // Biodata snapshot at time of graduation - survives beyond graduation for alumni management
+  firstName       String
+  lastName        String
+  middleName      String?
+  dateOfBirth     DateTime
+  admissionNumber String
+
+  graduationSession  String
+  stream             Stream
+  finalAverage       Float
+  
+  graduationDate DateTime      @default(now())
+}
+
+// --- School Configuration ------------------
+
+model SchoolConfig {
+  id                  String          @id @default(uuid())
+  
+  // Score Weights - same for JSS and SSS
+  caWeight            Float           @default(40) // percentage weight of CA score in total score
+  examWeight          Float           @default(60) // percentage weight of Exam score in total
+
+  //Grade thresholds as JSON arrays
+  // Structure: [{ min: 70, max: 100, grade: "A", remark: "Excellent" }, ...]
+  jssGradeBands Json
+  sssGradeBands Json
+
+  //promotion threshold
+  minAveragePercent       Int       @default(50)
+  minCoreSubjectPercent   Int       @default(40)
+
+  // School Branding - used on PDF report sheets and the web app
+  schoolName                String
+  schoolLogoUrl             String?
+  primaryColor               String?      @default("#1B3A6B")   // hex code
+
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
 }
