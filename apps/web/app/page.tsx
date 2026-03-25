@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 // ─── Icons (inline SVGs) ──────────────────────────────────────────────────────
 
@@ -348,7 +348,7 @@ function FeaturesSection() {
             Latest tools to ensure everything you need
           </h2>
           <p style={{ fontSize: 17, color: "#6B7280", maxWidth: 520, margin: "0 auto", lineHeight: 1.7 }}>
-            Manage your school's academic workflows from a single, intelligent dashboard — affordable, fast, and built for the Nigerian system.
+            Manage your school&#39;s academic workflows from a single, intelligent dashboard — affordable, fast, and built for the Nigerian system.
           </p>
         </div>
 
@@ -504,7 +504,7 @@ function TestimonialSection() {
       <div style={{ maxWidth: 780, margin: "0 auto" }}>
         <div style={{ fontSize: 48, color: "rgba(218,165,32,0.4)", lineHeight: 1, marginBottom: 8 }}>&ldquo;</div>
         <p style={{ fontSize: "clamp(20px, 3vw, 28px)", fontWeight: 700, lineHeight: 1.5, color: "#0c1c37", letterSpacing: "-0.5px", margin: "0 0 32px" }}>
-          "ReportWise has completely eliminated manual report card errors for us. Our teachers enter scores, and within minutes, 600+ student reports are ready to download. It's transformed our academic admin."
+          ReportWise has completely eliminated manual report card errors for us. Our teachers enter scores, and within minutes, 600+ student reports are ready to download. It&#39;s transformed our academic admin.
         </p>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14 }}>
           <div style={{ width: 48, height: 48, borderRadius: "50%", background: "linear-gradient(135deg, #0c1c37, goldenrod)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 18 }}>MA</div>
