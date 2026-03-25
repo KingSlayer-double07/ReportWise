@@ -595,7 +595,7 @@ function PricingSection() {
             Pay only for active students
           </h2>
           <p style={{ fontSize: 17, color: "#6B7280", maxWidth: 440, margin: "0 auto", lineHeight: 1.7 }}>
-            No flat fees. No surprises. You're billed per active student per session — fair and scalable.
+            No flat fees. No surprises. You&#39;re billed per active student per session — fair and scalable.
           </p>
         </div>
 
