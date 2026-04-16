@@ -13,6 +13,7 @@ export interface JwtPayload {
   schoolSlug: string | null;  // null for SuperAdmin
   iat?:       number;
   exp?:       number;
+  mustChangePassword: boolean;
 }
 
 // ─────────────────────────────────────────────
