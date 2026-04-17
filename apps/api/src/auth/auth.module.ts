@@ -6,7 +6,7 @@ import { AuthController } from "./auth.controller.js";
 import { JwtStrategy } from "./strategies/jwt.strategy.js";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard.js";
 import { RolesGuard } from "./guards/roles.guard.js";
-import { TenantModule } from "src/tenant/tenant.module.js";
+import { TenantModule } from '../tenant/tenant.module.js';
 
 @Module({
     imports: [

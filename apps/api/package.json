@@ -30,6 +30,7 @@
     "@reportwise/database": "workspace:*",
     "@reportwise/shared": "workspace:*",
     "bcrypt": "^6.0.0",
+    "dotenv": "^17.3.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.20.0",
