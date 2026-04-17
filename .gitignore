@@ -11,12 +11,13 @@ node_modules
 .next
 dist
 build
+generated
 
 # Turbo
 .turbo
 
 # Prisma
-packages/database/prisma/migrations/dev.db
+packages/database/prisma/migrations/
 
 # PWA generated files
 apps/web/public/sw.js

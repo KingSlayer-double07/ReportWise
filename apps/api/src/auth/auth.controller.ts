@@ -1,6 +1,6 @@
 import { Controller, Post, Get, Body, Headers, UseGuards, Request } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { AuthService } from './auth.service.js';
+import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import type { LoginDto, ChangePasswordDto } from '@reportwise/shared';
 
 @Controller('auth')

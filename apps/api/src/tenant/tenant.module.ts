@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
-import { TenantMiddleware } from "./tenant.middleware";
+import { TenantMiddleware } from "./tenant.middleware.js";
 import { JwtModule } from "@nestjs/jwt";
-import { TenantContextService } from "./tenant-context.service";
+import { TenantContextService } from "./tenant-context.service.js";
 
 @Module({
     imports: [

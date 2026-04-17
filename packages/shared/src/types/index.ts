@@ -1,7 +1,7 @@
 import {
   Role, Stream, ClassLevel, TermNumber,
   SchoolStatus, PlanTier,
-} from "../enums";
+} from "../enums/index.js";
 
 // ─────────────────────────────────────────────
 // AUTH
