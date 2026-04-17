@@ -14,8 +14,7 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
+    "baseUrl": "./",
     "paths": {
       "@reportwise/database": ["../../packages/database/src"]
     },

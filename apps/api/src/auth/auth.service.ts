@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { PRISMA_CLIENT } from '../common/prisma.module';
+import { PRISMA_CLIENT } from '../common/prisma.module.js';
 import { JwtPayload, Role } from '@reportwise/shared';
 import { LoginDto, ChangePasswordDto, AuthResponse } from '@reportwise/shared';
 
@@ -47,6 +47,7 @@ export class AuthService {
       sub:        user.id,
       role:       user.role,
       schoolSlug: schoolSlug,
+      mustChangePassword: user.mustChangePassword,
     };
 
     return {
@@ -75,6 +76,7 @@ export class AuthService {
       sub:        admin.id,
       role:       Role.SUPER_ADMIN,
       schoolSlug: null, // deliberately null — middleware skips search_path injection
+      mustChangePassword: false, // Super Admins don't need a mustChangePassword flag
     };
 
     return {

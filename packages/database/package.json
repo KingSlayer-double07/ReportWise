@@ -2,12 +2,14 @@
   "name": "@reportwise/database",
   "version": "1.0.0",
   "description": "",
-  "main": "./src/client.ts",
+  "main": "./dist/client.js",
+  "types": "./dist/client.d.ts",
   "type": "module",
   "exports": {
     ".": "./src/client.ts"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.json",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
