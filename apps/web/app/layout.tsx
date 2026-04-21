@@ -1,9 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, JetBrains_Mono, DM_Sans } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jbrains" });
+
+const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm", weight: ["400", "500", "600", "700", "800"] });
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
@@ -38,9 +43,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={cn(jetbrainsMono.variable, dmSans.variable, geistSans.variable, geistMono.variable)}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className="antialiased scroll-smooth"
       >
         {children}
       </body>
