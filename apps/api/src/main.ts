@@ -10,11 +10,10 @@ async function bootstrap() {
     .setTitle('ReportWise API')
     .setDescription('API documentation for ReportWise')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
-
-  
 
   app.enableCors({
     origin: process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3000',

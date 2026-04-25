@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { TenantMiddleware } from "./tenant.middleware.js";
 import { JwtModule } from "@nestjs/jwt";
 import { TenantContextService } from "./tenant-context.service.js";
+import { TenantProvisioningService } from "./tenant-provisioning.service.js";
 
 @Module({
     imports: [
@@ -9,7 +10,7 @@ import { TenantContextService } from "./tenant-context.service.js";
             secret: process.env.JWT_SECRET,
         }),
     ],
-    providers: [TenantMiddleware, TenantContextService],
-    exports: [TenantContextService],
+    providers: [TenantMiddleware, TenantContextService, TenantProvisioningService],
+    exports: [TenantContextService, TenantProvisioningService],
 })
 export class TenantModule {}

@@ -35,3 +35,16 @@ Each new school is onboarded by running:
 
 This creates the schema and applies all tenant-level migrations.
 The full migration runner is implemented in Sprint 2.
+
+## Manual Super Admin provisioning
+For a manual Super Admin-driven onboarding flow, run:
+  npx ts-node scripts/provision-school.ts --name "Greenfield Academy" --slug greenfield --admin-email admin@greenfield.edu.ng --plan-tier SMALL
+
+This command:
+- validates the incoming school metadata
+- provisions and migrates the tenant schema
+- seeds a default `SchoolConfig` inside the tenant schema
+- creates the first school Admin account with a temporary password
+- creates the matching record in `public."School"`
+
+The temporary Admin password is printed during provisioning and should be changed on first login.
