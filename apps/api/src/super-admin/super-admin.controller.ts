@@ -9,6 +9,7 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiCreatedResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
@@ -33,6 +34,9 @@ export class SuperAdminController {
       'Allows a Super Admin to manually provision a new tenant schema and register the school.',
   })
   @ApiBody({ type: ProvisionSchoolDto })
+  @ApiCreatedResponse({
+    description: 'School provisioning completed successfully.',
+  })
   @Post('schools/provision')
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtAuthGuard, RolesGuard)

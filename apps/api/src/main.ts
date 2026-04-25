@@ -6,6 +6,8 @@ import { AppModule } from './app.module.js';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.setGlobalPrefix('api');
+
   const config = new DocumentBuilder()
     .setTitle('ReportWise API')
     .setDescription('API documentation for ReportWise')
@@ -19,8 +21,6 @@ async function bootstrap() {
     origin: process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3000',
     credentials: true,
   });
-
-  app.setGlobalPrefix('api');
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
