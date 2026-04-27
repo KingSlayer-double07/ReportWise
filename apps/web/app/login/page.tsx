@@ -71,7 +71,7 @@ export default function LoginPage() {
               Welcome back
             </h1>
             <p className="text-sm text-gray-500 font-medium">
-              Sign in to your school's dashboard
+              Sign in to your school&#39;s dashboard
             </p>
           </div>
 
