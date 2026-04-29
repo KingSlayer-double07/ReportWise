@@ -12,6 +12,18 @@ export class AuthService {
     @Inject(PRISMA_CLIENT) private readonly prisma: any,
   ) {}
 
+  async retry<T>(fn: () => Promise<T>, retries = 3) {
+  try {
+    return await fn();
+  } catch (err: any) {
+    if (retries > 0 && err.code === 'EAI_AGAIN') {
+      await new Promise(res => setTimeout(res, 1000));
+      return this.retry(fn, retries - 1);
+    }
+    throw err;
+  }
+}
+
   /**
    * LOGIN
    * identifier = email (Admin) | staffId (Teacher) | admissionNumber (Student)
@@ -24,15 +36,16 @@ export class AuthService {
     }
 
     // Tenant login — search_path already set by middleware
-    const user = await this.prisma.user.findFirst({
-      where: {
-        OR: [
-          { email:           dto.identifier },
-          { staffId:         dto.identifier },
-          { admissionNumber: dto.identifier },
-        ],
-      },
-    });
+    const user = await this.retry(() => 
+      this.prisma.user.findFirst({
+        where: {
+          OR: [
+            { email:           dto.identifier },
+            { staffId:         dto.identifier },
+            { admissionNumber: dto.identifier },
+          ],
+        },
+    }));
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -62,9 +75,11 @@ export class AuthService {
 
   private async loginSuperAdmin(dto: LoginDto): Promise<AuthResponse> {
     // Super Admin lives in the public schema — use $queryRaw to bypass search_path
-    const results = await this.prisma.$queryRaw`
-      SELECT * FROM public."SuperAdmin" WHERE email = ${dto.identifier} LIMIT 1
-    `;
+    const results = await this.retry(() => 
+      this.prisma.$queryRaw`
+        SELECT * FROM public."SuperAdmin" WHERE email = ${dto.identifier} LIMIT 1
+      `
+    );
     const admin = results[0];
 
     if (!admin) throw new UnauthorizedException('Invalid credentials');
