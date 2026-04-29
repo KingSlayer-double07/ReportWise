@@ -15,7 +15,7 @@ dotenv.config();
 async function provisionTenant(schoolSlug: string) {
   const schemaName = `school_${schoolSlug}`;
   const client = new Client({
-    connectionString: process.env.DATABASE_URL || process.env.DATABASE_URL2,
+    connectionString: process.env.DATABASE_URL || process.env.DIRECT_URL,
   });
 
   await client.connect();

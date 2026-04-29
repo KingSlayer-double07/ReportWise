@@ -25,6 +25,9 @@ import { ChangePasswordDto } from './dtos/change-password.dto.js';
 import { AuthResponseDto } from './dtos/auth-response.dto.js';
 import { LoginDto } from './dtos/login.dto.js';
 import { MeResponseDto } from './dtos/me-response.dto.js';
+import type { LoginDto, ChangePasswordDto } from '@reportwise/shared';
+import { ApiBody, ApiHeader, ApiResponse } from '@nestjs/swagger';
+import { ApiLoginDto, ApiChangePasswordDto } from '../apiDtos/index.js';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -48,7 +51,14 @@ export class AuthController {
     description: 'Authentication successful.',
     type: AuthResponseDto,
   })
+  @ApiHeader({
+    name: 'x-school-slug',
+    description: 'School slug for tenant login (omit for Super Admin)',
+    required: false,
+  })
+  @ApiBody({type: ApiLoginDto})
   @Post('login')
+  @ApiResponse({ status: 201, description: 'Successful login returns JWT token and user info.' })
   login(
     @Body() dto: LoginDto,
     @Headers('x-school-slug') schoolSlug: string,
@@ -67,7 +77,9 @@ export class AuthController {
     description: 'Super Admin authentication successful.',
     type: AuthResponseDto,
   })
+  @ApiBody({type: ApiLoginDto})
   @Post('super/login')
+  @ApiResponse({ status: 201, description: "Login Successful"})
   superLogin(@Body() dto: LoginDto) {
     return this.authService.login(dto, null);
   }
