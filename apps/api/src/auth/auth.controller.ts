@@ -2,13 +2,22 @@ import { Controller, Post, Get, Body, Headers, UseGuards, Request } from '@nestj
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import type { LoginDto, ChangePasswordDto } from '@reportwise/shared';
+import { ApiBody, ApiHeader, ApiResponse } from '@nestjs/swagger';
+import { ApiLoginDto, ApiChangePasswordDto } from '../apiDtos/index.js';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   /** Admin / Teacher / Student login */
+  @ApiHeader({
+    name: 'x-school-slug',
+    description: 'School slug for tenant login (omit for Super Admin)',
+    required: false,
+  })
+  @ApiBody({type: ApiLoginDto})
   @Post('login')
+  @ApiResponse({ status: 201, description: 'Successful login returns JWT token and user info.' })
   login(
     @Body() dto: LoginDto,
     @Headers('x-school-slug') schoolSlug: string,
@@ -17,7 +26,9 @@ export class AuthController {
   }
 
   /** Super Admin login — no school slug */
+  @ApiBody({type: ApiLoginDto})
   @Post('super/login')
+  @ApiResponse({ status: 201, description: "Login Successful"})
   superLogin(@Body() dto: LoginDto) {
     return this.authService.login(dto, null);
   }
