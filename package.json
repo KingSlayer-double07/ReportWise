@@ -16,7 +16,11 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.32.1",
+  "dependencies": {
+    "@nestjs/swagger": "^11.2.6"
+  },
   "devDependencies": {
-    "turbo": "latest"
+    "turbo": "latest",
+    "typescript": "^6.0.3"
   }
 }
