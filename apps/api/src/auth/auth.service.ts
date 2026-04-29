@@ -48,12 +48,12 @@ export class AuthService {
     }));
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('User Not Found');
     }
 
     const passwordValid = await bcrypt.compare(dto.password, user.password);
     if (!passwordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Wrong Password');
     }
 
     const payload: JwtPayload = {
@@ -82,10 +82,10 @@ export class AuthService {
     );
     const admin = results[0];
 
-    if (!admin) throw new UnauthorizedException('Invalid credentials');
+    if (!admin) throw new UnauthorizedException('User Not Found');
 
     const valid = await bcrypt.compare(dto.password, admin.password);
-    if (!valid) throw new UnauthorizedException('Invalid credentials');
+    if (!valid) throw new UnauthorizedException('Wrong Password');
 
     const payload: JwtPayload = {
       sub:        admin.id,
