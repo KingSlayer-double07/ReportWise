@@ -12,9 +12,19 @@ async function bootstrap() {
     .setTitle('ReportWise API')
     .setDescription('API documentation for ReportWise')
     .setVersion('1.0')
+    .addGlobalResponse({
+      status: 500,
+      description: "Internal Server Error"
+    })
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true, // keeps the token across page refreshes
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+    },
+  });
 
   
 
