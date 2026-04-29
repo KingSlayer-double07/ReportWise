@@ -10,6 +10,7 @@ export class TenantMiddleware implements NestMiddleware {
 
     async use(req: Request, res: Response, next: NextFunction) {
         const authHeader = req.headers['authorization'];
+        console.log('TenantMiddleware: Received request with Authorization header:', authHeader);
 
         // If no token, let the request through - guards will reject it later if necessary
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -22,8 +23,11 @@ export class TenantMiddleware implements NestMiddleware {
         try {
             payload = this.jwtService.verify<JwtPayload>(token);
         } catch {
+            console.log('TenantMiddleware: Invalid authorization token');
             return next(); // Invalid token, let guards handle it
         }
+
+        console.log('TenantMiddleware: School Slug is:', payload.schoolSlug);
 
         // Super Admin bypasses tenant checks
         if (!payload.schoolSlug) {
@@ -45,6 +49,7 @@ export class TenantMiddleware implements NestMiddleware {
         try {
             await client.connect();
             await client.query(`SET search_path TO "${schemaName}", public`);
+            console.log(`TenantMiddleware: Set search_path to ${schemaName} for request with schoolSlug ${payload.schoolSlug}`);
             req['tenantSlug'] = payload.schoolSlug;
             req['tenantClient'] = client; // Attach the client to the request for cleanup
         } catch (err) {

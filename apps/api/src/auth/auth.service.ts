@@ -36,6 +36,7 @@ export class AuthService {
     }
 
     // Tenant login — search_path already set by middleware
+    console.log('Attempting to find user with identifier:', dto.identifier);
     const user = await this.retry(() => 
       this.prisma.user.findFirst({
         where: {
@@ -93,6 +94,8 @@ export class AuthService {
       schoolSlug: null, // deliberately null — middleware skips search_path injection
       mustChangePassword: false, // Super Admins don't need a mustChangePassword flag
     };
+
+    console.log('Super Admin login successful:', { email: dto.identifier, id: admin.id });
 
     return {
       accessToken: this.jwtService.sign(payload),
