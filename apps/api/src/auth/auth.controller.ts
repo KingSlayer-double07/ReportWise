@@ -2,7 +2,7 @@ import { Controller, Post, Get, Body, Headers, UseGuards, Request } from '@nestj
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import type { LoginDto, ChangePasswordDto } from '@reportwise/shared';
-import { ApiBody, ApiHeader, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiResponse } from '@nestjs/swagger';
 import { ApiLoginDto, ApiChangePasswordDto } from '../apiDtos/index.js';
 
 @Controller('auth')
@@ -10,6 +10,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   /** Admin / Teacher / Student login */
+  @ApiBearerAuth()
   @ApiHeader({
     name: 'x-school-slug',
     description: 'School slug for tenant login (omit for Super Admin)',

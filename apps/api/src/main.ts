@@ -15,6 +15,7 @@ async function bootstrap() {
     .setTitle('ReportWise API')
     .setDescription('API documentation for ReportWise')
     .setVersion('1.0')
+    .addBearerAuth()
     .addGlobalResponse({
       status: 500,
       description: "Internal Server Error"
