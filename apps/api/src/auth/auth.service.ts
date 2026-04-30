@@ -14,16 +14,16 @@ export class AuthService {
   ) {}
 
   async retry<T>(fn: () => Promise<T>, retries = 3) {
-  try {
-    return await fn();
-  } catch (err: any) {
-    if (retries > 0 && err.code === 'EAI_AGAIN') {
-      await new Promise(res => setTimeout(res, 1000));
-      return this.retry(fn, retries - 1);
+    try {
+      return await fn();
+    } catch (err: any) {
+      if (retries > 0 && err.code === 'EAI_AGAIN') {
+        await new Promise((res) => setTimeout(res, 1000));
+        return this.retry(fn, retries - 1);
+      }
+      throw err;
     }
-    throw err;
   }
-}
 
   /**
    * LOGIN
@@ -62,8 +62,8 @@ export class AuthService {
     }
 
     const payload: JwtPayload = {
-      sub:        user.id,
-      role:       user.role,
+      sub: user.id,
+      role: user.role,
       schoolSlug: schoolSlug,
       mustChangePassword: user.mustChangePassword,
     };
@@ -71,7 +71,7 @@ export class AuthService {
     return {
       accessToken: this.jwtService.sign(payload),
       user: {
-        id:   user.id,
+        id: user.id,
         role: user.role,
         name: '', // populated from profile join in a real endpoint
       },
@@ -93,13 +93,16 @@ export class AuthService {
     if (!valid) throw new UnauthorizedException('Wrong Password');
 
     const payload: JwtPayload = {
-      sub:        admin.id,
-      role:       Role.SUPER_ADMIN,
+      sub: admin.id,
+      role: Role.SUPER_ADMIN,
       schoolSlug: null, // deliberately null — middleware skips search_path injection
       mustChangePassword: false, // Super Admins don't need a mustChangePassword flag
     };
 
-    console.log('Super Admin login successful:', { email: dto.identifier, id: admin.id });
+    console.log('Super Admin login successful:', {
+      email: dto.identifier,
+      id: admin.id,
+    });
 
     return {
       accessToken: this.jwtService.sign(payload),
@@ -113,7 +116,8 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('User not found');
 
     const valid = await bcrypt.compare(dto.currentPassword, user.password);
-    if (!valid) throw new UnauthorizedException('Current password is incorrect');
+    if (!valid)
+      throw new UnauthorizedException('Current password is incorrect');
 
     const hashed = await bcrypt.hash(dto.newPassword, 12);
     await this.prisma.user.update({
