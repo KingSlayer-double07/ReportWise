@@ -9,35 +9,39 @@ export class TenantMiddleware implements NestMiddleware {
 
     async use(req: Request, res: Response, next: NextFunction) {
         const authHeader = req.headers['authorization'];
-        console.log('TenantMiddleware: Received request with Authorization header:', authHeader);
+        const slugHeader = req.headers['x-school-slug'] as string;
 
-        // If no token, let the request through - guards will reject it later if necessary
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return next();
+        let tenantSlug: string | null = null;
+        let payload: JwtPayload | null = null;
+
+        // If authHeader exists, try to extract tenantSlug from JWT token
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            const token = authHeader.split(' ')[1];
+
+            try {
+                payload = this.jwtService.verify<JwtPayload>(token);
+                tenantSlug = payload.schoolSlug;
+                console.log('TenantMiddleware: Extracted schoolSlug:', tenantSlug ? `schoolSlug=${tenantSlug}` : 'no schoolSlug in token');
+            } catch {
+                throw new UnauthorizedException('Invalid authorization token');
+            }
+        } else {
+            // If no token, check for x-school-slug header (for non-authenticated routes)
+            if (slugHeader) {
+                tenantSlug = slugHeader;
+                console.log('TenantMiddleware: Using schoolSlug from header:', tenantSlug);
+            }
         }
-
-        const token = authHeader.split(' ')[1];
-
-        let payload: JwtPayload;
-        try {
-            payload = this.jwtService.verify<JwtPayload>(token);
-        } catch {
-            console.log('TenantMiddleware: Invalid authorization token');
-            return next(); // Invalid token, let guards handle it
-        }
-
-        console.log('TenantMiddleware: School Slug is:', payload.schoolSlug);
-
+        
         // Super Admin bypasses tenant checks
-        if (!payload.schoolSlug) {
+        if (!tenantSlug) {
             req['tenantSlug'] = null;
             return next();
         }
 
-        const schemaName = `school_${payload.schoolSlug}`;
 
         // Validate slug format - only allows lowercase letters, numbers, underscores
-        if (!/^[a-z0-9_]+$/.test(payload.schoolSlug)) {
+        if (tenantSlug && !/^[a-z0-9_]+$/.test(tenantSlug)) {
             throw new UnauthorizedException('Invalid school identifier format');
         }
 
