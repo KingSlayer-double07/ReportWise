@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { PRISMA_CLIENT } from '../common/prisma.module.js';
 import { JwtPayload, Role } from '@reportwise/shared';
 import { LoginDto, ChangePasswordDto, AuthResponse } from '@reportwise/shared';
+import { withTenant } from '../common/tenantHelper.utils.js';
 
 @Injectable()
 export class AuthService {
@@ -37,16 +38,19 @@ export class AuthService {
 
     // Tenant login — search_path already set by middleware
     console.log('Attempting to find user with identifier:', dto.identifier);
-    const user = await this.retry(() => 
-      this.prisma.user.findFirst({
-        where: {
-          OR: [
-            { email:           dto.identifier },
-            { staffId:         dto.identifier },
-            { admissionNumber: dto.identifier },
-          ],
-        },
-    }));
+    const results = await this.retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$queryRawUnsafe(`
+  SELECT * FROM "User"
+  WHERE email = '${dto.identifier}'
+     OR "staffId" = '${dto.identifier}'
+     OR "admissionNumber" = '${dto.identifier}'
+  LIMIT 1
+`),
+      ),
+    );
+
+    const user = results[0];
 
     if (!user) {
       throw new UnauthorizedException('User Not Found');
