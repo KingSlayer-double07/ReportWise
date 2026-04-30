@@ -45,6 +45,7 @@ export class TenantMiddleware implements NestMiddleware {
             throw new UnauthorizedException('Invalid school identifier format');
         }
 
+        req['tenantSlug'] = tenantSlug;
 
         next();
     }
