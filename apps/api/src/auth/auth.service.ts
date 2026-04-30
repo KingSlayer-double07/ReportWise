@@ -41,12 +41,12 @@ export class AuthService {
     const results = await this.retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
         tx.$queryRawUnsafe(`
-  SELECT * FROM "User"
-  WHERE email = '${dto.identifier}'
-     OR "staffId" = '${dto.identifier}'
-     OR "admissionNumber" = '${dto.identifier}'
-  LIMIT 1
-`),
+          SELECT * FROM "User"
+          WHERE email = '${dto.identifier}'
+          OR "staffId" = '${dto.identifier}'
+          OR "admissionNumber" = '${dto.identifier}'
+          LIMIT 1
+          `),
       ),
     );
 
@@ -82,8 +82,7 @@ export class AuthService {
     // Super Admin lives in the public schema — use $queryRaw to bypass search_path
     const results = await this.retry(() => 
       this.prisma.$queryRaw`
-        SELECT * FROM public."SuperAdmin" WHERE email = ${dto.identifier} LIMIT 1
-      `
+        SELECT * FROM public."SuperAdmin" WHERE email = ${dto.identifier} LIMIT 1`
     );
     const admin = results[0];
 
