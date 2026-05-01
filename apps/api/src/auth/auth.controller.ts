@@ -22,33 +22,36 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
-import { ChangePasswordDto } from './dtos/change-password.dto.js';
-import { AuthResponseDto } from './dtos/auth-response.dto.js';
-import { LoginDto } from './dtos/login.dto.js';
-import { MeResponseDto } from './dtos/me-response.dto.js';
+
+
+import type { LoginDto, ChangePasswordDto } from '@reportwise/shared';
 import { ApiLoginDto, ApiChangePasswordDto } from '../apiDtos/index.js';
+
+// Optional response DTOs (only if you actually use them)
+import { AuthResponseDto } from './dtos/auth-response.dto.js';
+import { MeResponseDto } from './dtos/me-response.dto.js';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   /** Admin / Teacher / Student login */
   @ApiOperation({
     summary: 'Login as Admin, Teacher, or Student',
     description:
-      'Authenticates a tenant user using email, staffId, or admission number. Requires the school slug header.',
-  })
-  @ApiCreatedResponse({
-    description: 'Authentication successful.',
-    type: AuthResponseDto,
+      'Authenticates a tenant user using email, staffId, or admission number.',
   })
   @ApiHeader({
     name: 'x-school-slug',
     description: 'School slug for tenant login (omit for Super Admin)',
     required: false,
   })
-  @ApiBody({type: ApiLoginDto})
+  @ApiBody({ type: ApiLoginDto })
+  @ApiCreatedResponse({
+    description: 'Authentication successful.',
+    type: AuthResponseDto,
+  })
   @Post('login')
   @ApiResponse({ status: 201, description: 'Successful login returns JWT token and user info.' })
   login(
@@ -58,20 +61,16 @@ export class AuthController {
     return this.authService.login(dto, schoolSlug);
   }
 
-  /** Super Admin login — no school slug */
+  /** Super Admin login */
   @ApiOperation({
     summary: 'Login as Super Admin',
-    description:
-      'Authenticates a platform-level Super Admin against the public schema.',
   })
-  @ApiBody({ type: LoginDto })
+  @ApiBody({ type: ApiLoginDto })
   @ApiCreatedResponse({
     description: 'Super Admin authentication successful.',
     type: AuthResponseDto,
   })
-  @ApiBody({type: ApiLoginDto})
   @Post('super/login')
-  @ApiResponse({ status: 201, description: "Login Successful"})
   superLogin(@Body() dto: LoginDto) {
     return this.authService.login(dto, null);
   }
@@ -94,7 +93,7 @@ export class AuthController {
 
   /** Get current authenticated user */
   @ApiOperation({
-    summary: 'Get the current authenticated user payload',
+    summary: 'Get current authenticated user',
   })
   @ApiBearerAuth()
   @ApiOkResponse({
@@ -104,6 +103,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   me(@Request() req) {
-    return req.user; // Returns the JWT payload: { sub, role, schoolSlug }
+    return req.user;
   }
 }

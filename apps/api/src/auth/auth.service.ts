@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { PRISMA_CLIENT } from '../common/prisma.module.js';
 import { JwtPayload, Role } from '@reportwise/shared';
 import { LoginDto, ChangePasswordDto, AuthResponse } from '@reportwise/shared';
+import { withTenant } from '../common/tenantHelper.utils.js';
 
 @Injectable()
 export class AuthService {
@@ -13,16 +14,16 @@ export class AuthService {
   ) {}
 
   async retry<T>(fn: () => Promise<T>, retries = 3) {
-  try {
-    return await fn();
-  } catch (err: any) {
-    if (retries > 0 && err.code === 'EAI_AGAIN') {
-      await new Promise(res => setTimeout(res, 1000));
-      return this.retry(fn, retries - 1);
+    try {
+      return await fn();
+    } catch (err: any) {
+      if (retries > 0 && err.code === 'EAI_AGAIN') {
+        await new Promise((res) => setTimeout(res, 1000));
+        return this.retry(fn, retries - 1);
+      }
+      throw err;
     }
-    throw err;
   }
-}
 
   /**
    * LOGIN
@@ -37,16 +38,19 @@ export class AuthService {
 
     // Tenant login — search_path already set by middleware
     console.log('Attempting to find user with identifier:', dto.identifier);
-    const user = await this.retry(() => 
-      this.prisma.user.findFirst({
-        where: {
-          OR: [
-            { email:           dto.identifier },
-            { staffId:         dto.identifier },
-            { admissionNumber: dto.identifier },
-          ],
-        },
-    }));
+    const results = await this.retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$queryRawUnsafe(`
+          SELECT * FROM "User"
+          WHERE email = '${dto.identifier}'
+          OR "staffId" = '${dto.identifier}'
+          OR "admissionNumber" = '${dto.identifier}'
+          LIMIT 1
+          `),
+      ),
+    );
+
+    const user = results[0];
 
     if (!user) {
       throw new UnauthorizedException('User Not Found');
@@ -58,8 +62,8 @@ export class AuthService {
     }
 
     const payload: JwtPayload = {
-      sub:        user.id,
-      role:       user.role,
+      sub: user.id,
+      role: user.role,
       schoolSlug: schoolSlug,
       mustChangePassword: user.mustChangePassword,
     };
@@ -67,7 +71,7 @@ export class AuthService {
     return {
       accessToken: this.jwtService.sign(payload),
       user: {
-        id:   user.id,
+        id: user.id,
         role: user.role,
         name: '', // populated from profile join in a real endpoint
       },
@@ -78,8 +82,7 @@ export class AuthService {
     // Super Admin lives in the public schema — use $queryRaw to bypass search_path
     const results = await this.retry(() => 
       this.prisma.$queryRaw`
-        SELECT * FROM public."SuperAdmin" WHERE email = ${dto.identifier} LIMIT 1
-      `
+        SELECT * FROM public."SuperAdmin" WHERE email = ${dto.identifier} LIMIT 1`
     );
     const admin = results[0];
 
@@ -89,13 +92,16 @@ export class AuthService {
     if (!valid) throw new UnauthorizedException('Wrong Password');
 
     const payload: JwtPayload = {
-      sub:        admin.id,
-      role:       Role.SUPER_ADMIN,
+      sub: admin.id,
+      role: Role.SUPER_ADMIN,
       schoolSlug: null, // deliberately null — middleware skips search_path injection
       mustChangePassword: false, // Super Admins don't need a mustChangePassword flag
     };
 
-    console.log('Super Admin login successful:', { email: dto.identifier, id: admin.id });
+    console.log('Super Admin login successful:', {
+      email: dto.identifier,
+      id: admin.id,
+    });
 
     return {
       accessToken: this.jwtService.sign(payload),
@@ -109,7 +115,8 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('User not found');
 
     const valid = await bcrypt.compare(dto.currentPassword, user.password);
-    if (!valid) throw new UnauthorizedException('Current password is incorrect');
+    if (!valid)
+      throw new UnauthorizedException('Current password is incorrect');
 
     const hashed = await bcrypt.hash(dto.newPassword, 12);
     await this.prisma.user.update({
