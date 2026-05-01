@@ -5,9 +5,10 @@ dotenv.config();
 
 
 /**
- * Provisions a new school tenant in the database.
- * Creates a dedicated PostgreSQL schema and runs
- * all tenant-level table definitions inside it.
+ * Creates a dedicated PostgreSQL schema for a school tenant.
+ *
+ * This is the schema-only step. To create the schema and run tenant
+ * migrations in one command, use scripts/onboard-school.ts.
  *
  * Usage: npx ts-node scripts/provision-tenant.ts <school-slug>
  * Example: npx ts-node scripts/provision-tenant.ts greenfield
@@ -34,11 +35,9 @@ async function provisionTenant(schoolSlug: string) {
       `SET search_path TO "${schemaName}", public`
     );
 
-    // 3. Prisma migrations will be applied here in Sprint 2
-    //    For now we just confirm schema creation works
-    console.log(`✓ Tenant ${schoolSlug} provisioned successfully`);
+    console.log(`✓ Tenant schema ${schemaName} provisioned successfully`);
     console.log(
-      `  Next: run migrations against ${schemaName} to create tables`
+      `  Next: run scripts/migrate-tenant.ts ${schoolSlug}, or use scripts/onboard-school.ts ${schoolSlug} for schema + migrations`
     );
 
   } catch (error) {

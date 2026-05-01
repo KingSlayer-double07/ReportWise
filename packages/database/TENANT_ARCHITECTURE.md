@@ -46,5 +46,13 @@ This command:
 - seeds a default `SchoolConfig` inside the tenant schema
 - creates the first school Admin account with a temporary password
 - creates the matching record in `public."School"`
+- sends the school Admin a welcome email when `RESEND_API_KEY` is configured
 
-The temporary Admin password is printed during provisioning and should be changed on first login.
+The temporary Admin password is printed during provisioning, sent in the welcome email, and should be changed on first login.
+
+Welcome email delivery uses the official Resend Node.js SDK:
+  RESEND_API_KEY="re_your_key_here"
+  RESEND_FROM_EMAIL="ReportWise <welcome@reportwise.ng>"
+  NEXT_PUBLIC_WEB_URL="http://localhost:3000"
+
+Reference: https://resend.com/docs/send-with-nodejs

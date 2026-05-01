@@ -4,6 +4,7 @@ import { randomBytes, randomUUID } from "crypto";
 import * as dotenv from "dotenv";
 import { Client } from "pg";
 import * as path from "path";
+import { Resend } from "resend";
 import { fileURLToPath } from "url";
 
 dotenv.config();
@@ -46,6 +47,7 @@ const DEFAULT_GRADE_BANDS: GradeBand[] = [
 const DEFAULT_ADMIN_FIRST_NAME = "School";
 const DEFAULT_ADMIN_LAST_NAME = "Admin";
 const PASSWORD_SALT_ROUNDS = 12;
+const DEFAULT_RESEND_FROM_EMAIL = "ReportWise <welcome@reportwise.ng>";
 
 /**
  * Manual school provisioning flow for Super Admin use.
@@ -150,6 +152,7 @@ async function assertSchoolDoesNotExist(
   client: Client,
   input: ProvisionSchoolInput,
 ): Promise<void> {
+  const schemaName = `school_${input.slug}`;
   const existing = await client.query(
     `
       SELECT id, slug, "adminEmail"
@@ -172,6 +175,20 @@ async function assertSchoolDoesNotExist(
         `A school with admin email "${input.adminEmail}" already exists`,
       );
     }
+  }
+
+  const existingSchema = await client.query(
+    `
+      SELECT schema_name
+      FROM information_schema.schemata
+      WHERE schema_name = $1
+      LIMIT 1
+    `,
+    [schemaName],
+  );
+
+  if (existingSchema.rowCount && existingSchema.rows[0]) {
+    throw new Error(`Tenant schema "${schemaName}" already exists`);
   }
 }
 
@@ -201,6 +218,99 @@ async function createSchoolRecord(
 
 function generateTemporaryPassword(): string {
   return `RW-${randomBytes(9).toString("base64url")}`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+async function sendWelcomeEmail(
+  input: ProvisionSchoolInput,
+  temporaryPassword: string,
+): Promise<"sent" | "skipped" | "failed"> {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM_EMAIL || DEFAULT_RESEND_FROM_EMAIL;
+  const loginUrl =
+    process.env.NEXT_PUBLIC_WEB_URL ||
+    process.env.REPORTWISE_WEB_URL ||
+    "http://localhost:3000";
+
+  if (!apiKey) {
+    console.warn("⚠ Welcome email skipped: RESEND_API_KEY is not set");
+    return "skipped";
+  }
+
+  const adminName = `${input.adminFirstName} ${input.adminLastName}`.trim();
+  const safeSchoolName = escapeHtml(input.name);
+  const safeAdminName = escapeHtml(adminName || "School Admin");
+  const safeAdminEmail = escapeHtml(input.adminEmail);
+  const safeTemporaryPassword = escapeHtml(temporaryPassword);
+  const safeLoginUrl = escapeHtml(loginUrl);
+
+  const text = [
+    `Welcome to ReportWise, ${adminName || "School Admin"}.`,
+    "",
+    `Your school, ${input.name}, has been provisioned successfully.`,
+    "",
+    `Login URL: ${loginUrl}`,
+    `Email: ${input.adminEmail}`,
+    `Temporary password: ${temporaryPassword}`,
+    "",
+    "You will be asked to change this password after your first login.",
+  ].join("\n");
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; color: #111827; line-height: 1.6;">
+      <h1 style="font-size: 22px; margin: 0 0 16px;">Welcome to ReportWise</h1>
+      <p>Hello ${safeAdminName},</p>
+      <p>Your school, <strong>${safeSchoolName}</strong>, has been provisioned successfully.</p>
+      <p>You can sign in with these temporary credentials:</p>
+      <table style="border-collapse: collapse; margin: 16px 0;">
+        <tr>
+          <td style="padding: 6px 12px 6px 0; color: #4b5563;">Login URL</td>
+          <td style="padding: 6px 0;"><a href="${safeLoginUrl}">${safeLoginUrl}</a></td>
+        </tr>
+        <tr>
+          <td style="padding: 6px 12px 6px 0; color: #4b5563;">Email</td>
+          <td style="padding: 6px 0;">${safeAdminEmail}</td>
+        </tr>
+        <tr>
+          <td style="padding: 6px 12px 6px 0; color: #4b5563;">Temporary password</td>
+          <td style="padding: 6px 0;"><strong>${safeTemporaryPassword}</strong></td>
+        </tr>
+      </table>
+      <p>Please change this password after your first login.</p>
+      <p>ReportWise</p>
+    </div>
+  `;
+
+  try {
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({
+      from,
+      to: [input.adminEmail],
+      subject: `Welcome to ReportWise - ${input.name}`,
+      html,
+      text,
+    });
+
+    if (error) {
+      console.warn(`⚠ Welcome email failed: ${JSON.stringify(error)}`);
+      return "failed";
+    }
+
+    console.log(`✓ Welcome email sent to ${input.adminEmail}`);
+    return "sent";
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.warn(`⚠ Welcome email failed: ${message}`);
+    return "failed";
+  }
 }
 
 async function createSchoolAdminAccount(
@@ -325,12 +435,12 @@ async function provisionSchool(input: ProvisionSchoolInput): Promise<void> {
     );
     console.log(`  PlanTier:   ${input.planTier}\n`);
 
-    console.log("Step 1/4 - Provisioning tenant schema and migrations...\n");
+    console.log("Step 1/5 - Provisioning tenant schema and migrations...\n");
     runTenantOnboarding(input.slug);
 
     await client.query("BEGIN");
 
-    console.log("\nStep 2/4 - Seeding default SchoolConfig...\n");
+    console.log("\nStep 2/5 - Seeding default SchoolConfig...\n");
     const configSeedResult = await seedDefaultSchoolConfig(client, input);
 
     console.log(
@@ -339,7 +449,7 @@ async function provisionSchool(input: ProvisionSchoolInput): Promise<void> {
         : `✓ Existing SchoolConfig preserved in school_${input.slug}`,
     );
 
-    console.log("\nStep 3/4 - Creating school Admin account...\n");
+    console.log("\nStep 3/5 - Creating school Admin account...\n");
     const adminProvisionResult = await createSchoolAdminAccount(client, input);
 
     if (adminProvisionResult.status === "created") {
@@ -354,14 +464,21 @@ async function provisionSchool(input: ProvisionSchoolInput): Promise<void> {
       );
     }
 
-    console.log("\nStep 4/4 - Registering school in public schema...\n");
+    console.log("\nStep 4/5 - Registering school in public schema...\n");
     await createSchoolRecord(client, input);
     await client.query("COMMIT");
+
+    console.log("\nStep 5/5 - Sending welcome email...\n");
+    const welcomeEmailResult =
+      adminProvisionResult.status === "created"
+        ? await sendWelcomeEmail(input, adminProvisionResult.temporaryPassword)
+        : "skipped";
 
     console.log(`✓ School "${input.name}" provisioned successfully`);
     console.log(`  Schema: school_${input.slug}`);
     console.log(`  Default SchoolConfig: ${configSeedResult}`);
     console.log(`  School Admin: ${adminProvisionResult.status}`);
+    console.log(`  Welcome Email: ${welcomeEmailResult}`);
     console.log(`  Public record created in public."School"`);
     console.log(`  Status: TRIAL`);
   } finally {

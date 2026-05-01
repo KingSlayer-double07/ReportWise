@@ -188,6 +188,12 @@ NEXT_PUBLIC_WEB_URL=http://localhost:3000
 # Supabase PostgreSQL connection string
 # Get this from: Supabase → your project → Settings → Database → URI
 DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres"
+DIRECT_URL="postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres"
+
+# Welcome email delivery for manual school provisioning
+RESEND_API_KEY=re_your_key_here
+RESEND_FROM_EMAIL="ReportWise <welcome@reportwise.ng>"
+NEXT_PUBLIC_WEB_URL=http://localhost:3000
 ```
 
 ### `apps/api/.env`

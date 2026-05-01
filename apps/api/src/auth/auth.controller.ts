@@ -17,6 +17,7 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service.js';
@@ -25,8 +26,6 @@ import { ChangePasswordDto } from './dtos/change-password.dto.js';
 import { AuthResponseDto } from './dtos/auth-response.dto.js';
 import { LoginDto } from './dtos/login.dto.js';
 import { MeResponseDto } from './dtos/me-response.dto.js';
-import type { LoginDto, ChangePasswordDto } from '@reportwise/shared';
-import { ApiBody, ApiHeader, ApiResponse } from '@nestjs/swagger';
 import { ApiLoginDto, ApiChangePasswordDto } from '../apiDtos/index.js';
 
 @ApiTags('Auth')
@@ -40,13 +39,6 @@ export class AuthController {
     description:
       'Authenticates a tenant user using email, staffId, or admission number. Requires the school slug header.',
   })
-  @ApiHeader({
-    name: 'x-school-slug',
-    description: 'Tenant school slug used to identify the target school.',
-    required: true,
-    example: 'greenfield',
-  })
-  @ApiBody({ type: LoginDto })
   @ApiCreatedResponse({
     description: 'Authentication successful.',
     type: AuthResponseDto,
@@ -89,7 +81,7 @@ export class AuthController {
     summary: 'Change current user password',
   })
   @ApiBearerAuth()
-  @ApiBody({ type: ChangePasswordDto })
+  @ApiBody({ type: ApiChangePasswordDto })
   @ApiNoContentResponse({
     description: 'Password changed successfully.',
   })
