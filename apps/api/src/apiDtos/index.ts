@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Stream, TermNumber, PlanTier } from "packages/database/dist/generated/prisma/enums.js";
+import type { Stream, TermNumber, PlanTier } from "@reportwise/database";
 
 
 // ─────────────────────────────────────────────
