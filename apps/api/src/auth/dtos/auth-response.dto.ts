@@ -4,17 +4,17 @@ class AuthUserDto {
   @ApiProperty({
     example: 'c1d67f7b-8b5a-4fd7-8d6f-ccf6f4d4f444',
   })
-  id: string;
+  id!: string;
 
   @ApiProperty({
     example: 'ADMIN',
   })
-  role: string;
+  role!: string;
 
   @ApiProperty({
     example: 'Test Admin',
   })
-  name: string;
+  name!: string;
 }
 
 export class AuthResponseDto {
@@ -22,10 +22,10 @@ export class AuthResponseDto {
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
     description: 'JWT access token for authenticated API requests.',
   })
-  accessToken: string;
+  accessToken!: string;
 
   @ApiProperty({
     type: AuthUserDto,
   })
-  user: AuthUserDto;
+  user!: AuthUserDto;
 }

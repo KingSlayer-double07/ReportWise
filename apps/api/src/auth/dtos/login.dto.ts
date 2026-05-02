@@ -6,11 +6,11 @@ export class LoginDto {
     description:
       'Login identifier. Use email for Admin, staffId for Teacher, or admission number for Student.',
   })
-  identifier: string;
+  identifier!: string;
 
   @ApiProperty({
     example: 'TempPass123!',
     description: 'Plain-text password for the user account.',
   })
-  password: string;
+  password!: string;
 }

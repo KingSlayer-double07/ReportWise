@@ -5,11 +5,11 @@ export class ChangePasswordDto {
     example: 'TempPass123!',
     description: 'The user’s current password.',
   })
-  currentPassword: string;
+  currentPassword!: string;
 
   @ApiProperty({
     example: 'NewSecurePass456!',
     description: 'The new password that will replace the current password.',
   })
-  newPassword: string;
+  newPassword!: string;
 }
