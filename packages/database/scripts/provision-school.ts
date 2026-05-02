@@ -417,12 +417,16 @@ async function seedDefaultSchoolConfig(
           "updatedAt"
         )
       VALUES
-        ($1, 40, 60, $2::jsonb, $3::jsonb, 50, 40, $4, '#1B3A6B', now())
+        ($1, $2, $3, $4::jsonb, $5::jsonb, $6, $7, $8, '#1B3A6B', now())
     `,
     [
       randomUUID(),
-      JSON.stringify(DEFAULT_GRADE_BANDS),
-      JSON.stringify(DEFAULT_GRADE_BANDS),
+      CA_WEIGHT,
+      EXAM_WEIGHT,
+      JSON.stringify(DEFAULT_GRADE_BANDS_JSS),
+      JSON.stringify(DEFAULT_GRADE_BANDS_SSS),
+      MIN_AVERAGE_PERCENT,
+      MIN_CORE_SUBJECT_PERCENT,
       input.name,
     ],
   );
