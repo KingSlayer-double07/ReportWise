@@ -115,11 +115,11 @@ export class AuthService {
     
     const results = await this.retry(() => 
       withTenant(this.prisma, schoolSlug as string, (tx) =>
-        tx.$queryRaw(`
+        tx.$queryRaw`
           SELECT * FROM "User"
-          WHERE id = '${userId}'
+          WHERE id = ${userId}
           LIMIT 1
-          `),
+          `
       ),
     );
     
