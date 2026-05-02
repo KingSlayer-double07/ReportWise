@@ -430,6 +430,22 @@ async function seedDefaultSchoolConfig(
   return "created";
 }
 
+async function seedClasses(
+  client: Client,
+  input: ProvisionSchoolInput
+): Promise<"created"> {
+  const schemaName = `school_${input.slug}`;
+  for (const level of CLASS_LEVELS) {
+        await client.query(
+          `INSERT INTO "${schemaName}"."Class" (id, level, "updatedAt")
+           VALUES ($1, $2, now())`,
+          [randomUUID(), level]
+        );
+      };
+
+      return "created";
+}
+
 function runTenantOnboarding(schoolSlug: string): void {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
@@ -457,12 +473,12 @@ async function provisionSchool(input: ProvisionSchoolInput): Promise<void> {
     );
     console.log(`  PlanTier:   ${input.planTier}\n`);
 
-    console.log("Step 1/5 - Provisioning tenant schema and migrations...\n");
+    console.log("Step 1/6 - Provisioning tenant schema and migrations...\n");
     runTenantOnboarding(input.slug);
 
     await client.query("BEGIN");
 
-    console.log("\nStep 2/5 - Seeding default SchoolConfig...\n");
+    console.log("\nStep 2/6 - Seeding default SchoolConfig...\n");
     const configSeedResult = await seedDefaultSchoolConfig(client, input);
 
     console.log(
@@ -471,7 +487,15 @@ async function provisionSchool(input: ProvisionSchoolInput): Promise<void> {
         : `✓ Existing SchoolConfig preserved in school_${input.slug}`,
     );
 
-    console.log("\nStep 3/5 - Creating school Admin account...\n");
+    console.log("\nStep 3/6 - Seeding default Classes...\n");
+    const classesSeedResult = await seedClasses(client, input);
+    console.log(
+      classesSeedResult === "created"
+        ? `✓ Default Classes created in school_${input.slug}`
+        : `✓ Existing Classes preserved in school_${input.slug}`,
+    );
+    
+    console.log("\nStep 4/6 - Creating school Admin account...\n");
     const adminProvisionResult = await createSchoolAdminAccount(client, input);
 
     if (adminProvisionResult.status === "created") {
@@ -486,11 +510,11 @@ async function provisionSchool(input: ProvisionSchoolInput): Promise<void> {
       );
     }
 
-    console.log("\nStep 4/5 - Registering school in public schema...\n");
+    console.log("\nStep 5/6 - Registering school in public schema...\n");
     await createSchoolRecord(client, input);
     await client.query("COMMIT");
 
-    console.log("\nStep 5/5 - Sending welcome email...\n");
+    console.log("\nStep 6/6 - Sending welcome email...\n");
     const welcomeEmailResult =
       adminProvisionResult.status === "created"
         ? await sendWelcomeEmail(input, adminProvisionResult.temporaryPassword)
@@ -499,6 +523,7 @@ async function provisionSchool(input: ProvisionSchoolInput): Promise<void> {
     console.log(`✓ School "${input.name}" provisioned successfully`);
     console.log(`  Schema: school_${input.slug}`);
     console.log(`  Default SchoolConfig: ${configSeedResult}`);
+    console.log(`  Default Classes: ${classesSeedResult}`);
     console.log(`  School Admin: ${adminProvisionResult.status}`);
     console.log(`  Welcome Email: ${welcomeEmailResult}`);
     console.log(`  Public record created in public."School"`);
