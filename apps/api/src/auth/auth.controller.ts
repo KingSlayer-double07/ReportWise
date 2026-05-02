@@ -88,7 +88,8 @@ export class AuthController {
   @Post('change-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   changePassword(@Request() req, @Body() dto: ChangePasswordDto) {
-    return this.authService.changePassword(req.user.sub, dto);
+    console.log(`Received password change request for user ${req.user.schoolSlug}/${req.user.sub}`);
+    return this.authService.changePassword(req.user.sub, req.user.schoolSlug, dto);
   }
 
   /** Get current authenticated user */
