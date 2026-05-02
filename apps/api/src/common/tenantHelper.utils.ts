@@ -12,7 +12,7 @@ export async function withTenant<T>(
     );
 
     const path = await tx.$queryRaw`SHOW search_path`;
-console.log('withTenant - ACTIVE search_path:', path);
+    console.log('withTenant - ACTIVE search_path:', path);
 
     return fn(tx);
   });

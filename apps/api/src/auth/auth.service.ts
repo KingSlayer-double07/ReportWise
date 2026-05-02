@@ -110,8 +110,20 @@ export class AuthService {
   }
 
   /** CHANGE PASSWORD — works for all tenant roles */
-  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+  async changePassword(userId: string, schoolSlug: string | null, dto: ChangePasswordDto): Promise<void> {
+    console.log(`Changing password for user ${userId}`);
+    
+    const results = await this.retry(() => 
+      withTenant(this.prisma, schoolSlug as string, (tx) =>
+        tx.$queryRaw(`
+          SELECT * FROM "User"
+          WHERE id = '${userId}'
+          LIMIT 1
+          `),
+      ),
+    );
+    
+    const user = results[0];
     if (!user) throw new UnauthorizedException('User not found');
 
     const valid = await bcrypt.compare(dto.currentPassword, user.password);
@@ -119,12 +131,10 @@ export class AuthService {
       throw new UnauthorizedException('Current password is incorrect');
 
     const hashed = await bcrypt.hash(dto.newPassword, 12);
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        password: hashed,
-        mustChangePassword: false,
-      },
-    });
+    await this.retry(() => 
+      withTenant(this.prisma, schoolSlug as string, (tx) =>
+        tx.$executeRaw`UPDATE "User" SET password = ${hashed}, "mustChangePassword" = false WHERE id = ${userId}`
+      ),
+    );
   }
 }
