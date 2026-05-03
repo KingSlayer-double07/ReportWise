@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Body, Param, UseGuards, Post } from '@nestjs/common';
+import { Controller, Get, Patch, Body, Param, UseGuards, Post, Request } from '@nestjs/common';
 import { AcademicSessionService } from './academic-session.service.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
@@ -24,8 +24,8 @@ export class AcademicSessionController {
     @ApiResponse({ status: 409, description: 'An active academic session already exists.' })
     @Post('sessions')
     @Roles(Role.ADMIN)
-    createSession(@Body() dto: CreateSessionDto) {
-        return this.svc.createSession(dto);
+    createSession(@Request() req, @Body() dto: CreateSessionDto) {
+        return this.svc.createSession(req.user.schoolSlug, dto);
     }
 
     @ApiOperation({
@@ -36,8 +36,8 @@ export class AcademicSessionController {
     @ApiResponse({ status: 200, description: 'Returns a list of academic sessions.' })
     @Get('sessions')
     @Roles(Role.ADMIN, Role.TEACHER)
-    listSessions() {
-        return this.svc.listSessions();
+    listSessions(@Request() req) {
+        return this.svc.listSessions(req.user.schoolSlug);
     }
 
     @ApiOperation({
@@ -48,8 +48,8 @@ export class AcademicSessionController {
     @ApiResponse({ status: 200, description: 'Returns the active academic session.' })
     @Get('sessions/active')
     @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
-    getActiveSession() {
-        return this.svc.getActiveSession();
+    getActiveSession(@Request() req) {
+        return this.svc.getActiveSession(req.user.schoolSlug);
     }
 
     @ApiOperation({
@@ -60,8 +60,8 @@ export class AcademicSessionController {
     @ApiResponse({ status: 200, description: 'The academic session has been successfully activated.' })
     @Patch('sessions/:id/activate')
     @Roles(Role.ADMIN)
-    activateSession(@Param('id') id: string) {
-        return this.svc.activateSession(id);
+    activateSession(@Request() req, @Param('id') id: string) {
+        return this.svc.activateSession(req.user.schoolSlug, id);
     }
 
     @ApiOperation({
@@ -71,25 +71,25 @@ export class AcademicSessionController {
     @ApiBearerAuth()
     @ApiBody({ type: ApiCreateTermDto })
     @ApiResponse({ status: 201, description: 'The academic term has been successfully created.' })
-    @ApiResponse({ status: 409, description: 'An active academic term already exists.' })
+    @ApiResponse({ status: 409, description: 'Conflict Errors' })
     @ApiResponse({ status: 404, description: 'Academic session not found.' })
     @Post('sessions/:sessionId/terms')
     @Roles(Role.ADMIN)
-    createTerm(@Body() dto: CreateTermDto) {
-        return this.svc.createTerm(dto);
+    createTerm(@Request() req, @Body() dto: CreateTermDto) {
+        return this.svc.createTerm(req.user.schoolSlug, dto);
     }
 
     @ApiOperation({
-        summary: 'List academic terms for a session',
-        description: 'Retrieves a list of all academic terms for a given academic session.',
+        summary: 'List Academic Terms',
+        description: 'Retrieves a list of all academic terms.',
     })
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Returns a list of academic terms.' })
     @ApiResponse({ status: 404, description: 'Academic session not found.' })
     @Get('sessions/terms/active')
     @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
-    getActiveTerm() {
-        return this.svc.getActiveTerm();
+    getActiveTerm(@Request() req) {
+        return this.svc.getActiveTerm(req.user.schoolSlug);
     }
 
     @ApiOperation({
@@ -101,8 +101,8 @@ export class AcademicSessionController {
     @ApiResponse({ status: 404, description: 'Academic term not found.' })
     @Patch('sessions/terms/:termId/activate')
     @Roles(Role.ADMIN)
-    activateTerm(@Param('termId') termId: string) {
-        return this.svc.activateTerm(termId);
+    activateTerm(@Request() req, @Param('termId') termId: string) {
+        return this.svc.activateTerm(req.user.schoolSlug, termId);
     }
 
     @ApiOperation({
@@ -115,7 +115,7 @@ export class AcademicSessionController {
     @ApiResponse({ status: 404, description: 'Academic term not found.' })
     @Patch('sessions/terms/:termId/dates')
     @Roles(Role.ADMIN)
-    updateTermDates(@Param('termId') termId: string, @Body() dto: UpdateTermDto) {
-        return this.svc.updateTermDates(termId, dto);
+    updateTermDates(@Request() req, @Param('termId') termId: string, @Body() dto: UpdateTermDto) {
+        return this.svc.updateTermDates(req.user.schoolSlug, termId, dto);
     }
 }
