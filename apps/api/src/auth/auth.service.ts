@@ -36,22 +36,21 @@ export class AuthService {
       return this.loginSuperAdmin(dto);
     }
 
-    // Tenant login — search_path already set by middleware
+    // Tenant login — search_path is set in withTenant, use raw SQL to ensure the tenant schema is targeted correctly
     console.log('Attempting to find user with identifier:', dto.identifier);
-    const results = await this.retry(() =>
+    const loginResults: any[] = await this.retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
         tx.$queryRawUnsafe(`
           SELECT * FROM "User"
-          WHERE email = '${dto.identifier}'
-          OR "staffId" = '${dto.identifier}'
-          OR "admissionNumber" = '${dto.identifier}'
+          WHERE email = ${dto.identifier}
+            OR "staffId" = ${dto.identifier}
+            OR "admissionNumber" = ${dto.identifier}
           LIMIT 1
-          `),
+        `,
       ),
     );
 
-    const user = results[0];
-
+    const user = loginResults[0];
     if (!user) {
       throw new UnauthorizedException('User Not Found');
     }
@@ -73,7 +72,7 @@ export class AuthService {
       user: {
         id: user.id,
         role: user.role,
-        name: '', // populated from profile join in a real endpoint
+        name: user.name, 
       },
     };
   }
@@ -113,17 +112,16 @@ export class AuthService {
   async changePassword(userId: string, schoolSlug: string | null, dto: ChangePasswordDto): Promise<void> {
     console.log(`Changing password for user ${userId}`);
     
-    const results = await this.retry(() => 
+    const passwordResults: any[] = await this.retry(() =>
       withTenant(this.prisma, schoolSlug as string, (tx) =>
         tx.$queryRaw`
           SELECT * FROM "User"
           WHERE id = ${userId}
           LIMIT 1
-          `
+        `,
       ),
     );
-    
-    const user = results[0];
+    const user = passwordResults[0];
     if (!user) throw new UnauthorizedException('User not found');
 
     const valid = await bcrypt.compare(dto.currentPassword, user.password);
@@ -131,9 +129,13 @@ export class AuthService {
       throw new UnauthorizedException('Current password is incorrect');
 
     const hashed = await bcrypt.hash(dto.newPassword, 12);
-    await this.retry(() => 
+    await this.retry(() =>
       withTenant(this.prisma, schoolSlug as string, (tx) =>
-        tx.$executeRaw`UPDATE "User" SET password = ${hashed}, "mustChangePassword" = false WHERE id = ${userId}`
+        tx.$executeRaw`
+          UPDATE "User"
+          SET password = ${hashed}, "mustChangePassword" = false
+          WHERE id = ${userId}
+        `,
       ),
     );
   }
