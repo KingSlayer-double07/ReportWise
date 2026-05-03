@@ -13,7 +13,7 @@ export class AuthService {
     @Inject(PRISMA_CLIENT) private readonly prisma: any,
   ) {}
 
-  async retry<T>(fn: () => Promise<T>, retries = 3) {
+  async retry<T>(fn: () => Promise<T>, retries = 5) {
     try {
       return await fn();
     } catch (err: any) {
