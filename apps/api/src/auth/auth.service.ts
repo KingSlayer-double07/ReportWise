@@ -78,12 +78,12 @@ export class AuthService {
   }
 
   private async loginSuperAdmin(dto: LoginDto): Promise<AuthResponse> {
-    // Super Admin lives in the public schema — use $queryRaw to bypass search_path
-    const results = await this.retry(() => 
-      this.prisma.$queryRaw`
-        SELECT * FROM public."SuperAdmin" WHERE email = ${dto.identifier} LIMIT 1`
+    // Super Admin lives in the public schema — query the public SuperAdmin model
+    const admin = await this.retry(() =>
+      this.prisma.superAdmin.findUnique({
+        where: { email: dto.identifier },
+      }),
     );
-    const admin = results[0];
 
     if (!admin) throw new UnauthorizedException('User Not Found');
 
