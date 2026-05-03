@@ -1,6 +1,6 @@
 import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
 import { PRISMA_CLIENT } from '../common/prisma.module.js';
-import { withTenant } from '../common/tenantHelper.utils.js';
+import { withTenant, retry } from '../common/tenantHelper.utils.js';
 import { CreateSessionDto, CreateTermDto, UpdateTermDto } from '@reportwise/shared';
 
 @Injectable()
@@ -10,30 +10,31 @@ export class AcademicSessionService {
   ) {}
 
   /** POST /academic-sessions Create a new academic session */
-  async createSession(dto: CreateSessionDto) {
-    // Ensure only one active session per school
-    const activeSession = await this.prisma.AcademicSession.findFirst({
-      where: { isActive: true },
-    });
-    if (activeSession) {
-      throw new ConflictException('An active academic session already exists. Please deactivate it before creating a new one.');
-    }
+  async createSession(schoolSlug: string, dto: CreateSessionDto) {
+    const newSession = await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$executeRaw`
+          INSERT INTO "AcademicSession" ("id", "label", "startDate", "endDate", "updatedAt")
+          VALUES (${randomUUID()}, ${dto.label}, ${dto.startDate}, ${dto.endDate}, NOW())
+          RETURNING *
+        `
+      ),
+    );
 
-    const newSession = await this.prisma.AcademicSession.create({
-        data: {
-            label: dto.label,
-            startDate: dto.startDate,
-            endDate: dto.endDate,
-        },
-    });
     return newSession;
   }
 
   /** GET /academic-sessions Retrieve all academic sessions */
-  async listSessions() {
-    const sessions = await this.prisma.AcademicSession.findMany(
-        { orderBy: { startDate: 'desc' } }
+  async listSessions(schoolSlug: string) {
+    const sessionsResult: any[] = await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$queryRaw`
+          SELECT * FROM "AcademicSession" ORDER BY "createdAt" DESC
+        `
+      )
     );
+
+    const sessions: any[] = sessionsResult;
     if(!sessions || sessions.length === 0) {
         throw new NotFoundException('No academic sessions found.');
     }
@@ -41,10 +42,17 @@ export class AcademicSessionService {
   }
 
   /** GET /academic-sessions/active Returns the single active academic session */
-  async getActiveSession() {
-    const activeSession = await this.prisma.AcademicSession.findFirst({
-      where: { isActive: true },
-    });
+  async getActiveSession(schoolSlug: string) {
+    const activeSessionResult: any[] = await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$queryRaw`
+          SELECT * FROM "AcademicSession"
+          WHERE "isActive" = true
+        `
+      )
+    );
+
+    const activeSession = activeSessionResult[0];
     if (!activeSession) {
       throw new NotFoundException('No active academic session found.');
     }
@@ -52,35 +60,57 @@ export class AcademicSessionService {
   }
 
   /** PATCH /academic-sessions/:id Activate an academic session */
-  async activateSession(sessionId: string) {
-    const session = await this.prisma.AcademicSession.findUnique({
-      where: { sessionId },
-    });
+  async activateSession(schoolSlug: string, sessionId: string) {
+    const sessionResult: any[] = await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$queryRaw`
+          SELECT * FROM "AcademicSession"
+          WHERE "id" = ${sessionId}
+        `
+      )
+    );
+
+    const session = sessionResult[0];
     if (!session) {
       throw new NotFoundException('Academic session not found.');
     }
-    return this.prisma.AcademicSession.update({
-      where: { sessionId },
-      data: { isActive: true },
-    });
+
+    return await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$executeRaw`
+          UPDATE "AcademicSession"
+          SET "isActive" = CASE WHEN "id" = ${sessionId} THEN true ELSE false END, "updatedAt" = NOW()
+        `
+      )
+    );
   }
 
   /** POST /academic-sessions/:id/create-term Create a new academic term */
-  async createTerm(dto: CreateTermDto) {
-    const session = await this.prisma.AcademicSession.findUnique({
-      where: { sessionId: dto.sessionId },
-    });
+  async createTerm(schoolSlug: string, dto: CreateTermDto) {
+    const sessionResult: any[] = await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$queryRaw`
+          SELECT * FROM "AcademicSession"
+          WHERE "id" = ${dto.sessionId}
+        `
+      )
+    );
+
+    const session = sessionResult[0];
     if (!session) {
       throw new NotFoundException('Academic session not found.');
     }
 
     //Check duplicate term number within the same session
-    const existingTerm = await this.prisma.TermRecord.findFirst({
-      where: {
-        termNumber: dto.termNumber,
-        sessionId: dto.sessionId,
-      },
-    });
+    const existingTermResult: any[] = await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$queryRaw`
+          SELECT * FROM "TermRecord"
+          WHERE "term" = ${dto.termNumber} AND "sessionId" = ${dto.sessionId}
+        `
+      )
+    );
+    const existingTerm = existingTermResult[0];
     if (existingTerm) {
       throw new ConflictException('An academic term with the same number already exists in this session.');
     }
@@ -91,29 +121,58 @@ export class AcademicSessionService {
     }
 
     //Ensure max of 3 terms per session
-    const termCount = await this.prisma.TermRecord.count({
-      where: { sessionId: dto.sessionId },
-    });
+    const termCount: number = await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$queryRaw`
+          SELECT COUNT(*) FROM "TermRecord"
+          WHERE "sessionId" = ${dto.sessionId}
+        `
+      )
+    );
     if (termCount >= 3) {
       throw new ConflictException('An academic session can only have a maximum of 3 terms.');
     }
 
-    const newTerm = await this.prisma.TermRecord.create({
-      data: {
-        termNumber: dto.termNumber,
-        startDate: dto.startDate,
-        endDate: dto.endDate,
-        sessionId: dto.sessionId,
-      },
-    });
+    const newTerm: any[] = await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$executeRaw`
+          INSERT INTO "TermRecord" ("id", "term", "startDate", "endDate", "sessionId", "updatedAt")
+          VALUES (${randomUUID()}, ${dto.termNumber}, ${dto.startDate}, ${dto.endDate}, ${dto.sessionId}, NOW())
+          RETURNING *
+        `
+      )
+    );
     return newTerm;
   }
 
+  /** GET /academic-sessions Retrieve all academic sessions */
+  async listTerms(schoolSlug: string) {
+    const termsResult: any[] = await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$queryRaw`
+          SELECT * FROM "TermRecord" ORDER BY "createdAt" DESC
+        `
+      )
+    );
+
+    const terms: any[] = termsResult;
+    if(!terms || terms.length === 0) {
+        throw new NotFoundException('No academic terms found.');
+    }
+    return terms;
+  }
+  
   /** GET /academic-sessions/:id/terms/active Retrieve the active academic term */
-  async getActiveTerm() {
-    const activeTerm = await this.prisma.TermRecord.findFirst({
-      where: { isActive: true },
-    });
+  async getActiveTerm(schoolSlug: string) {
+    const activeTermResult: any[] = await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$queryRaw`
+          SELECT * FROM "TermRecord"
+          WHERE "isActive" = true
+        `
+      )
+    );
+    const activeTerm = activeTermResult[0];
     if (!activeTerm) {
       throw new NotFoundException('No active academic term found.');
     }
@@ -121,33 +180,50 @@ export class AcademicSessionService {
   }
 
   /** PATCH /academic-sessions/:id/terms/active Activate the active academic term */
-  async activateTerm(termId: string) {
-    const term = await this.prisma.TermRecord.findUnique({
-      where: { termId },
-    });
+  async activateTerm(schoolSlug: string, termId: string) {
+    const term = await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$queryRaw`
+          SELECT * FROM "TermRecord"
+          WHERE "id" = ${termId}
+        `
+      )
+    );
+
     if (!term) {
       throw new NotFoundException('Academic term not found.');
     }
-    return this.prisma.TermRecord.update({
-      where: { termId },
-      data: { isActive: true },
-    });
+    return await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$executeRaw`
+          UPDATE "TermRecord"
+          SET "isActive" = CASE WHEN "id" = ${termId} THEN true ELSE false END, "updatedAt" = NOW()
+        `
+      )
+    );
   }
 
   /** PATCH /academic-sessions/:id/terms Update academic term dates */
-  async updateTermDates(termId: string, dto: UpdateTermDto) {
-    const term = await this.prisma.TermRecord.findUnique({
-      where: { termId },
-    });
+  async updateTermDates(schoolSlug: string, termId: string, dto: UpdateTermDto) {
+    const term = await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$queryRaw`
+          SELECT * FROM "TermRecord"
+          WHERE "id" = ${termId}
+        `
+      )
+    );
     if (!term) {
       throw new NotFoundException('Academic term not found.');
     }
-    return this.prisma.TermRecord.update({
-      where: { termId },
-      data: {
-        startDate: dto.startDate,
-        endDate: dto.endDate,
-      },
-    });
+    return await retry(() =>
+      withTenant(this.prisma, schoolSlug, (tx) =>
+        tx.$executeRaw`
+          UPDATE "TermRecord"
+          SET "startDate" = ${dto.startDate}, "endDate" = ${dto.endDate}, "updatedAt" = NOW()
+          WHERE "id" = ${termId}
+        `
+      )
+    );
   }
 }
