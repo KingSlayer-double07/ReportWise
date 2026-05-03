@@ -71,7 +71,7 @@ export default function LoginPage() {
               Welcome back
             </h1>
             <p className="text-sm text-gray-500 font-medium">
-              Sign in to your school's dashboard
+              Sign in to your school&apos;s dashboard
             </p>
           </div>
 
@@ -201,14 +201,14 @@ export default function LoginPage() {
         />
 
         {/* Glowing orb top-right */}
-        <div
+        {/* <div
           className="pointer-events-none absolute -top-24 -right-24 w-[480px] h-[480px] rounded-full"
           style={{
             background:
               "radial-gradient(circle, rgba(255,255,255,0.45) 0%, rgba(100,180,255,0.2) 35%, transparent 70%)",
             filter: "blur(10px)",
           }}
-        />
+        /> */}
 
         {/* Goldish accent line */}
         <div

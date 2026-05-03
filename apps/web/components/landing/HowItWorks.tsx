@@ -159,15 +159,14 @@ export default function HowItWorks() {
             </div>
           </div>
 
-          {/* Card 4 — Share & Bill */}
+          {/* Card 4 — Share*/}
           <div className="bg-gray-50 hover:bg-[#1C2333]/5 duration-300 border border-gray-100 rounded-2xl p-6 flex flex-col gap-5">
             <div>
               <h3 className="font-sans text-lg font-bold text-[#0c1c37] mb-1">
-                Share & Bill
+                Share
               </h3>
               <p className="font-sans text-sm text-gray-500 leading-[1.6]">
-                Students receive PDF reports via the portal. Schools collect
-                payment via Paystack per active student.
+                Students receive PDF reports via the portal
               </p>
             </div>
             {/* Mini mockup — share / payment */}

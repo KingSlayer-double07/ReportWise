@@ -1,7 +1,9 @@
+import { BarChart, FileText, GraduationCap, Users, School, CalendarSync, type LucideIcon } from "lucide-react";
+
 // ─── Landing Page Static Data ─────────────────────────────────────────────────
 
 export interface Feature {
-  icon: string;
+  icon: LucideIcon;
   title: string;
   desc: string;
   tag: string;
@@ -9,37 +11,37 @@ export interface Feature {
 
 export const FEATURES: Feature[] = [
   {
-    icon: "📊",
+    icon: BarChart,
     title: "Smart Score Entry",
     desc: "Teachers enter CA & exam scores per subject. The platform auto-calculates totals, grades, positions, and remarks using your school's custom grading rules.",
     tag: "Core Feature",
   },
   {
-    icon: "📄",
+    icon: FileText,
     title: "Branded PDF Reports",
     desc: "Generate beautifully formatted, school-branded report sheets in one click. Students can view and download them from their portal.",
     tag: "Reports",
   },
   {
-    icon: "🎓",
+    icon: GraduationCap,
     title: "Promotion & Graduation",
     desc: "Automate end-of-session promotion logic for JSS1–SSS3. Handle Art, Commercial, and Science stream transitions seamlessly.",
     tag: "Academic Flow",
   },
   {
-    icon: "💳",
-    title: "Paystack Billing",
-    desc: "Per-student, per-session billing powered by Paystack. School admins can track payments, send reminders, and manage subscriptions.",
-    tag: "Payments",
+    icon: Users,
+    title: "Parent Portal",
+    desc: "Dedicated portal for parents to monitor their child's academic progress, view attendance, and download termly reports securely.",
+    tag: "Engagement",
   },
   {
-    icon: "🏫",
+    icon: School,
     title: "Multi-Class Management",
     desc: "Full support for the Nigerian school structure — JSS1, JSS2, JSS3, SSS1, SSS2, SSS3 — with arms, subjects, and teachers assigned per class.",
     tag: "Structure",
   },
   {
-    icon: "🔄",
+    icon: CalendarSync,
     title: "Term & Session Control",
     desc: "Admins control term progression and session rollover. Student records are preserved across sessions for comprehensive academic history.",
     tag: "Administration",
@@ -72,8 +74,8 @@ export const STEPS: Step[] = [
   },
   {
     n: "04",
-    title: "Share & Bill",
-    desc: "Students receive PDF reports via the portal. Schools collect payment via Paystack per active student.",
+    title: "Share & Engage",
+    desc: "Students receive PDF reports via the portal. Parents can securely view progress and keep track of updates.",
   },
 ];
 
@@ -121,7 +123,7 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Mrs Funke Nwachukwu",
     handle: "Head Teacher, Greenfield Academy",
     quote:
-      "Paystack billing integration was a game changer. Parents pay online, we track every payment in one place. The whole platform just works the way a Nigerian school actually operates.",
+      "The Parent Portal was a game changer. Parents monitor their kids online, we track every grade in one place. The whole platform just works the way a Nigerian school actually operates.",
     highlight: "game changer",
   },
   {

@@ -15,14 +15,14 @@ export default function CTABanner() {
           }}
         >
           {/* Glowing orb — top right, matches reference */}
-          <div
+          {/* <div
             className="pointer-events-none absolute -top-20 -right-20 w-[420px] h-[420px] rounded-full"
             style={{
               background:
                 "radial-gradient(circle, rgba(255,255,255,0.55) 0%, rgba(100,180,255,0.25) 35%, transparent 70%)",
               filter: "blur(8px)",
             }}
-          />
+          /> */}
 
           {/* Subtle dot-grid texture overlay */}
           <div
