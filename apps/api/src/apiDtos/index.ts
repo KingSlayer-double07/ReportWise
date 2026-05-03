@@ -77,12 +77,14 @@ export class CreateStudentDto {
 
     @ApiPropertyOptional({
         description: "Student's Date of Birth",
+        format: "YYYY-MM-DD",
         type: String
     })
     dateOfBirth?: string;
 
     @ApiPropertyOptional({
         description: "Student's Gender",
+        enum: ['MALE', 'FEMALE'],
         type: String
     })
     gender?: string;
@@ -107,6 +109,7 @@ export class CreateStudentDto {
 
     @ApiPropertyOptional({
         description: "Parent's Email Address",
+        format: "email",
         type: String
     })
     parentEmail?: string;
@@ -125,6 +128,7 @@ export class CreateStudentDto {
 
     @ApiPropertyOptional({
         description: "Student stream; required if enrolling into SSS class",
+        enum: ['SCIENCE', 'ARTS', 'COMMERCIAL', 'NONE'],
         type: String
     })
     stream?: Stream;
@@ -157,6 +161,7 @@ export class UpdateStudentDto {
 
     @ApiPropertyOptional({
         description: "Student's Date of Birth",
+        format: "YYYY-MM-DD",
         type: String
     })
     dateOfBirth?: string;
@@ -328,6 +333,7 @@ export class PromoteStudentDto {
 
     @ApiPropertyOptional({
         description: "New stream when promoting to SSS1",
+        enum: ['SCIENCE', 'ARTS', 'COMMERCIAL', 'NONE'],
         type: String
     })
     newStream?: Stream;
@@ -427,6 +433,7 @@ export class AssignSubjectDto {
 
     @ApiProperty({
         description: "Stream for the subject assignment",
+        enum: ['SCIENCE', 'ARTS', 'COMMERCIAL', 'NONE'],
         type: String
     })
     stream!: Stream;
@@ -445,18 +452,21 @@ export class AssignSubjectDto {
 export class ApiCreateSessionDto {
     @ApiProperty({
         description: "Academic session label",
+        example: "2025/2026",
         type: String
     })
     label!: string;
 
     @ApiProperty({
-        description: "Session start date",
+        description: "Format: YYYY-MM-DD",
+        format: "date",
         type: String
     })
     startDate!: string;
 
     @ApiProperty({
-        description: "Session end date",
+        description: "Format: YYYY-MM-DD",
+        format: "date",
         type: String
     })
     endDate!: string;
@@ -470,19 +480,22 @@ export class ApiCreateTermDto {
     sessionId!: string;
 
     @ApiProperty({
-        description: "Term number",
+        description: "Term Number",
+        enum: ['FIRST', 'SECOND', 'THIRD'],
         type: String
     })
     termNumber!: TermNumber;
 
     @ApiProperty({
-        description: "Term start date",
+        description: "Format: YYYY-MM-DD",
+        format: "date",
         type: String
     })
     startDate!: string;
 
     @ApiProperty({
-        description: "Term end date",
+        description: "Format: YYYY-MM-DD",
+        format: "date",
         type: String
     })
     endDate!: string;
@@ -496,19 +509,22 @@ export class ApiUpdateTermDto {
   termId!: string;
   
   @ApiPropertyOptional({
-    description: "Term number",
+    description: "Term Number",
+    enum: ['FIRST', 'SECOND', 'THIRD'],
     type: String
   })
   termNumber?: TermNumber;
 
   @ApiPropertyOptional({
-    description: "Term start date",
+    description: "Format: YYYY-MM-DD",
+    format: "date",
     type: String
   })
   startDate?: string;
 
   @ApiPropertyOptional({
-    description: "Term end date",
+    description: "Format: YYYY-MM-DD",
+    format: "date",
     type: String
   })
   endDate?: string;
@@ -533,12 +549,14 @@ export class ProvisionSchoolDto {
 
     @ApiProperty({
         description: "Administrator email address",
+        format: "email",
         type: String
     })
     adminEmail!: string;
 
     @ApiProperty({
         description: "Selected plan tier",
+        enum: ['SMALL', 'MEDIUM', 'LARGE', 'ENTERPRISE', 'COMPLIMENTARY'],
         type: String
     })
     planTier!: PlanTier;
