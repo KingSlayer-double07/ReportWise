@@ -1,6 +1,7 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { PRISMA_CLIENT } from '../common/prisma.module.js';
 import { UpdateSchoolConfigDto } from '@reportwise/shared';
+import { withTenant } from '../common/tenantHelper.utils.js';
 
 @Injectable()
 export class SchoolConfigService {
@@ -9,15 +10,22 @@ export class SchoolConfigService {
   ) {}
 
   /** GET the single SchoolConfig row. There is always exactly one per school. */
-  async getConfig() {
-    const config = await this.prisma.schoolConfig.findFirst();
+  async getConfig(schoolSlug: string) {
+    const results: any[] = await withTenant(this.prisma, schoolSlug, (tx) =>
+    tx.$queryRaw`
+      SELECT * FROM "SchoolConfig" LIMIT 1
+    `
+    );
+    const config = results[0];
+    console.log('Fetched SchoolConfig:', config);
     if (!config) throw new NotFoundException('SchoolConfig not found');
     return config;
   }
 
   /** PATCH — partial update of SchoolConfig */
-  async updateConfig(dto: UpdateSchoolConfigDto) {
-    const config = await this.getConfig();
+  async updateConfig(schoolSlug: string, dto: UpdateSchoolConfigDto) {
+    const config = await this.getConfig(schoolSlug);
+    console.log('Update DTO:', dto);
     return this.prisma.schoolConfig.update({
       where: { id: config.id },
       data: {

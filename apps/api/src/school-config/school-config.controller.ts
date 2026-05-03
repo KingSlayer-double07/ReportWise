@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, Request } from '@nestjs/common';
 import { SchoolConfigService } from './school-config.service.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
@@ -19,10 +19,11 @@ export class SchoolConfigController {
   })
   @ApiBearerAuth()
   @ApiResponse({ status: 200, description: 'Returns the current school configuration.' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  getConfig() {
-    return this.svc.getConfig();
+  getConfig(@Request() req) {
+    return this.svc.getConfig(req.user.schoolSlug);
   }
 
   @ApiOperation({
@@ -34,7 +35,7 @@ export class SchoolConfigController {
   @ApiResponse({ status: 200, description: 'Returns the updated school configuration.' })
   @Patch()
   @Roles(Role.ADMIN)
-  updateConfig(@Body() dto: UpdateSchoolConfigDto) {
-    return this.svc.updateConfig(dto);
+  updateConfig(@Request() req, @Body() dto: UpdateSchoolConfigDto) {
+    return this.svc.updateConfig(req.user.schoolSlug, dto);
   }
 }

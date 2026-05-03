@@ -40,7 +40,7 @@ export class AuthService {
     console.log('Attempting to find user with identifier:', dto.identifier);
     const loginResults: any[] = await this.retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
-        tx.$queryRawUnsafe(`
+        tx.$queryRaw`
           SELECT * FROM "User"
           WHERE email = ${dto.identifier}
             OR "staffId" = ${dto.identifier}
