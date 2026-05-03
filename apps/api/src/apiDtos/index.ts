@@ -21,13 +21,13 @@ export class ApiLoginDto {
 }
 
 export class ApiChangePasswordDto {
-  @ApiProperty({
+    @ApiProperty({
         description: "Current password",
         type: String
     })
     currentPassword!: string;
 
-  @ApiProperty({
+    @ApiProperty({
         description: "New password",
         type: String
     })
@@ -35,21 +35,21 @@ export class ApiChangePasswordDto {
 }
 
 export class AuthResponse {
-  @ApiProperty({
+    @ApiProperty({
         description: "The access token for the user",
         type: String
     })
     accessToken!: string;
 
-  @ApiProperty({
+    @ApiProperty({
         description: "The user information {id, role, name}",
         type: Object
     })
     user!: {
-    id:    string;
-    role:  string;
-    name:  string;
-  };
+        id:    string;
+        role:  string;
+        name:  string;
+    };
 }
 
 // ─────────────────────────────────────────────
@@ -58,63 +58,144 @@ export class AuthResponse {
 
 export class CreateStudentDto {
     @ApiProperty({
-        description: "Student's First Name"
+        description: "Student's First Name",
+        type: String
     })
-    firstName!:      string;
+    firstName!: string;
 
     @ApiProperty({
-        description: "Student's Last Name"
+        description: "Student's Last Name",
+        type: String
     })
-    lastName!:       string;
+    lastName!: string;
 
     @ApiPropertyOptional({
-        description: "Student's Middle Name"
+        description: "Student's Middle Name",
+        type: String
     })
-    middleName?:    string;
+    middleName?: string;
 
     @ApiPropertyOptional({
-        description: "Student's Date of Birth"
+        description: "Student's Date of Birth",
+        type: String
     })
-  dateOfBirth?:   string;
+    dateOfBirth?: string;
 
-  @ApiPropertyOptional({
-    description: "Student's Gender"
-  })
-  gender?:        string;
+    @ApiPropertyOptional({
+        description: "Student's Gender",
+        type: String
+    })
+    gender?: string;
 
+    @ApiPropertyOptional({
+        description: "Student's State of Origin",
+        type: String
+    })
+    stateOfOrigin?: string;
 
-  @ApiPropertyOptional({
-    description: "Student's State of Origin"
-  })
-  stateOfOrigin?: string;
+    @ApiPropertyOptional({
+        description: "Parent's Name",
+        type: String
+    })
+    parentName?: string;
 
-  @ApiPropertyOptional({
-    description: "Parent's Name"
-  })
-  parentName?:    string;
+    @ApiPropertyOptional({
+        description: "Parent's Phone Number",
+        type: String
+    })
+    parentContact?: string;
 
-  @ApiPropertyOptional({
-    description: "Parent's Phone Number"
-  })
-  parentContact?:   string;
-  parentEmail?:   string;
-  address?:       string;
-  classId!:        string;
-  stream?:        Stream;   // required if enrolling into SSS class
-  sessionId!:      string;
+    @ApiPropertyOptional({
+        description: "Parent's Email Address",
+        type: String
+    })
+    parentEmail?: string;
+
+    @ApiPropertyOptional({
+        description: "Student's Address",
+        type: String
+    })
+    address?: string;
+
+    @ApiProperty({
+        description: "ID of the class the student is enrolled in",
+        type: String
+    })
+    classId!: string;
+
+    @ApiPropertyOptional({
+        description: "Student stream; required if enrolling into SSS class",
+        type: String
+    })
+    stream?: Stream;
+
+    @ApiProperty({
+        description: "ID of the academic session for the student",
+        type: String
+    })
+    sessionId!: string;
 }
 
 export class UpdateStudentDto {
-  firstName?:     string;
-  lastName?:      string;
-  middleName?:    string;
-  dateOfBirth?:   string;
-  gender?:        string;
-  stateOfOrigin?: string;
-  parentName?:    string;
-  parentContact?:   string;
-  parentEmail?:   string;
-  address?:       string;
+    @ApiPropertyOptional({
+        description: "Student's First Name",
+        type: String
+    })
+    firstName?: string;
+
+    @ApiPropertyOptional({
+        description: "Student's Last Name",
+        type: String
+    })
+    lastName?: string;
+
+    @ApiPropertyOptional({
+        description: "Student's Middle Name",
+        type: String
+    })
+    middleName?: string;
+
+    @ApiPropertyOptional({
+        description: "Student's Date of Birth",
+        type: String
+    })
+    dateOfBirth?: string;
+
+    @ApiPropertyOptional({
+        description: "Student's Gender",
+        type: String
+    })
+    gender?: string;
+
+    @ApiPropertyOptional({
+        description: "Student's State of Origin",
+        type: String
+    })
+    stateOfOrigin?: string;
+
+    @ApiPropertyOptional({
+        description: "Parent's Name",
+        type: String
+    })
+    parentName?: string;
+
+    @ApiPropertyOptional({
+        description: "Parent's Phone Number",
+        type: String
+    })
+    parentContact?: string;
+
+    @ApiPropertyOptional({
+        description: "Parent's Email Address",
+        type: String
+    })
+    parentEmail?: string;
+
+    @ApiPropertyOptional({
+        description: "Student's Address",
+        type: String
+    })
+    address?: string;
 }
 
 // ─────────────────────────────────────────────
@@ -122,10 +203,29 @@ export class UpdateStudentDto {
 // ─────────────────────────────────────────────
 
 export class CreateTeacherDto {
-  firstName!: string;
-  lastName!:  string;
-  staffId!:   string;
-  classId?:  string;
+    @ApiProperty({
+        description: "Teacher's First Name",
+        type: String
+    })
+    firstName!: string;
+
+    @ApiProperty({
+        description: "Teacher's Last Name",
+        type: String
+    })
+    lastName!: string;
+
+    @ApiProperty({
+        description: "Teacher's staff identifier",
+        type: String
+    })
+    staffId!: string;
+
+    @ApiPropertyOptional({
+        description: "Assigned class ID",
+        type: String
+    })
+    classId?: string;
 }
 
 // ─────────────────────────────────────────────
@@ -133,16 +233,50 @@ export class CreateTeacherDto {
 // ─────────────────────────────────────────────
 
 export class UpsertScoreDto {
-  studentId!: string;
-  subjectId!: string;
-  termId!:    string;
-  sessionId!: string;
-  caScore!:   number;
-  examScore!: number;
+    @ApiProperty({
+        description: "Student ID",
+        type: String
+    })
+    studentId!: string;
+
+    @ApiProperty({
+        description: "Subject ID",
+        type: String
+    })
+    subjectId!: string;
+
+    @ApiProperty({
+        description: "Term ID",
+        type: String
+    })
+    termId!: string;
+
+    @ApiProperty({
+        description: "Session ID",
+        type: String
+    })
+    sessionId!: string;
+
+    @ApiProperty({
+        description: "Continuous assessment score",
+        type: Number
+    })
+    caScore!: number;
+
+    @ApiProperty({
+        description: "Exam score",
+        type: Number
+    })
+    examScore!: number;
 }
 
 export class BulkUpsertScoresDto {
-  scores!: UpsertScoreDto[];
+    @ApiProperty({
+        description: "List of score payloads to upsert",
+        type: UpsertScoreDto,
+        isArray: true
+    })
+    scores!: UpsertScoreDto[];
 }
 
 // ─────────────────────────────────────────────
@@ -150,10 +284,29 @@ export class BulkUpsertScoresDto {
 // ─────────────────────────────────────────────
 
 export class UpdateReportSheetMetaDto {
-  teacherRemark?: string;
-  attendance?:    number;
-  daysInSession?: number;
-  conduct?:       string;
+    @ApiPropertyOptional({
+        description: "Teacher's remark on the report sheet",
+        type: String
+    })
+    teacherRemark?: string;
+
+    @ApiPropertyOptional({
+        description: "Student attendance count",
+        type: Number
+    })
+    attendance?: number;
+
+    @ApiPropertyOptional({
+        description: "Number of days in the session",
+        type: Number
+    })
+    daysInSession?: number;
+
+    @ApiPropertyOptional({
+        description: "Conduct remark",
+        type: String
+    })
+    conduct?: string;
 }
 
 // ─────────────────────────────────────────────
@@ -161,14 +314,38 @@ export class UpdateReportSheetMetaDto {
 // ─────────────────────────────────────────────
 
 export class PromoteStudentDto {
-  studentId!:  string;
-  promoted!:   boolean;
-  newStream?: Stream;  // required only for JSS3 → SSS1
+    @ApiProperty({
+        description: "Student ID",
+        type: String
+    })
+    studentId!: string;
+
+    @ApiProperty({
+        description: "Promotion status",
+        type: Boolean
+    })
+    promoted!: boolean;
+
+    @ApiPropertyOptional({
+        description: "New stream when promoting to SSS1",
+        type: String
+    })
+    newStream?: Stream;
 }
 
 export class BulkPromoteDto {
-  sessionId!:  string;
-  promotions!: PromoteStudentDto[];
+    @ApiProperty({
+        description: "Academic session ID for promotions",
+        type: String
+    })
+    sessionId!: string;
+
+    @ApiProperty({
+        description: "List of student promotions",
+        type: PromoteStudentDto,
+        isArray: true
+    })
+    promotions!: PromoteStudentDto[];
 }
 
 // ─────────────────────────────────────────────
@@ -176,18 +353,65 @@ export class BulkPromoteDto {
 // ─────────────────────────────────────────────
 
 export class UpdateSchoolConfigDto {
-  caWeight?:              number;
-  examWeight?:            number;
-  jssGradeBands?:         Array<{
-    min: number; max: number; grade: string; remark: string;
-  }>;
-  sssGradeBands?:         Array<{
-    min: number; max: number; grade: string; remark: string;
-  }>;
-  minAveragePercent?:     number;
-  minCoreSubjectPercent?: number;
-  schoolName?:            string;
-  primaryColor?:          string;
+    @ApiPropertyOptional({
+        description: "Continuous assessment weight percentage",
+        type: Number
+    })
+    caWeight?: number;
+
+    @ApiPropertyOptional({
+        description: "Exam weight percentage",
+        type: Number
+    })
+    examWeight?: number;
+
+    @ApiPropertyOptional({
+        description: "JSS grade band definitions",
+        type: Object,
+        isArray: true
+    })
+    jssGradeBands?: Array<{
+        min: number;
+        max: number;
+        grade: string;
+        remark: string;
+    }>;
+
+    @ApiPropertyOptional({
+        description: "SSS grade band definitions",
+        type: Object,
+        isArray: true
+    })
+    sssGradeBands?: Array<{
+        min: number;
+        max: number;
+        grade: string;
+        remark: string;
+    }>;
+
+    @ApiPropertyOptional({
+        description: "Minimum average percentage for passing",
+        type: Number
+    })
+    minAveragePercent?: number;
+
+    @ApiPropertyOptional({
+        description: "Minimum core subject percentage for passing",
+        type: Number
+    })
+    minCoreSubjectPercent?: number;
+
+    @ApiPropertyOptional({
+        description: "School name",
+        type: String
+    })
+    schoolName?: string;
+
+    @ApiPropertyOptional({
+        description: "Primary brand color",
+        type: String
+    })
+    primaryColor?: string;
 }
 
 // ─────────────────────────────────────────────
@@ -195,26 +419,99 @@ export class UpdateSchoolConfigDto {
 // ─────────────────────────────────────────────
 
 export class AssignSubjectDto {
-  subjectId!: string;
-  stream!:    Stream;
-  isCore!:    boolean;
+    @ApiProperty({
+        description: "Subject ID",
+        type: String
+    })
+    subjectId!: string;
+
+    @ApiProperty({
+        description: "Stream for the subject assignment",
+        type: String
+    })
+    stream!: Stream;
+
+    @ApiProperty({
+        description: "Whether the subject is core",
+        type: Boolean
+    })
+    isCore!: boolean;
 }
 
 // ─────────────────────────────────────────────
 // ACADEMIC SESSION & TERM
 // ─────────────────────────────────────────────
 
-export class CreateSessionDto {
-  label!:     string;  // e.g. "2025/2026"
-  startDate!: string;
-  endDate!:   string;
+export class ApiCreateSessionDto {
+    @ApiProperty({
+        description: "Academic session label",
+        type: String
+    })
+    label!: string;
+
+    @ApiProperty({
+        description: "Session start date",
+        type: String
+    })
+    startDate!: string;
+
+    @ApiProperty({
+        description: "Session end date",
+        type: String
+    })
+    endDate!: string;
 }
 
-export class CreateTermDto {
-  sessionId!:  string;
-  termNumber!: TermNumber;
-  startDate!:  string;
-  endDate!:    string;
+export class ApiCreateTermDto {
+    @ApiProperty({
+        description: "Academic session ID",
+        type: String
+    })
+    sessionId!: string;
+
+    @ApiProperty({
+        description: "Term number",
+        type: String
+    })
+    termNumber!: TermNumber;
+
+    @ApiProperty({
+        description: "Term start date",
+        type: String
+    })
+    startDate!: string;
+
+    @ApiProperty({
+        description: "Term end date",
+        type: String
+    })
+    endDate!: string;
+}
+
+export class ApiUpdateTermDto {
+  @ApiProperty({
+    description: "Term ID",
+    type: String
+  })
+  termId!: string;
+  
+  @ApiPropertyOptional({
+    description: "Term number",
+    type: String
+  })
+  termNumber?: TermNumber;
+
+  @ApiPropertyOptional({
+    description: "Term start date",
+    type: String
+  })
+  startDate?: string;
+
+  @ApiPropertyOptional({
+    description: "Term end date",
+    type: String
+  })
+  endDate?: string;
 }
 
 // ─────────────────────────────────────────────
@@ -222,8 +519,27 @@ export class CreateTermDto {
 // ─────────────────────────────────────────────
 
 export class ProvisionSchoolDto {
-  name!:       string;
-  slug!:       string;
-  adminEmail!: string;
-  planTier!:   PlanTier;
+    @ApiProperty({
+        description: "School name",
+        type: String
+    })
+    name!: string;
+
+    @ApiProperty({
+        description: "School slug",
+        type: String
+    })
+    slug!: string;
+
+    @ApiProperty({
+        description: "Administrator email address",
+        type: String
+    })
+    adminEmail!: string;
+
+    @ApiProperty({
+        description: "Selected plan tier",
+        type: String
+    })
+    planTier!: PlanTier;
 }
