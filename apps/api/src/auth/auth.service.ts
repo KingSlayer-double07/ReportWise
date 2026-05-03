@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { PRISMA_CLIENT } from '../common/prisma.module.js';
 import { JwtPayload, Role } from '@reportwise/shared';
 import { LoginDto, ChangePasswordDto, AuthResponse } from '@reportwise/shared';
-import { withTenant } from '../common/tenantHelper.utils.js';
+import { withTenant, retry } from '../common/tenantHelper.utils.js';
 
 @Injectable()
 export class AuthService {
@@ -13,17 +13,7 @@ export class AuthService {
     @Inject(PRISMA_CLIENT) private readonly prisma: any,
   ) {}
 
-  async retry<T>(fn: () => Promise<T>, retries = 5) {
-    try {
-      return await fn();
-    } catch (err: any) {
-      if (retries > 0 && err.code === 'EAI_AGAIN') {
-        await new Promise((res) => setTimeout(res, 1000));
-        return this.retry(fn, retries - 1);
-      }
-      throw err;
-    }
-  }
+  
 
   /**
    * LOGIN
@@ -38,7 +28,7 @@ export class AuthService {
 
     // Tenant login — search_path is set in withTenant, use raw SQL to ensure the tenant schema is targeted correctly
     console.log('Attempting to find user with identifier:', dto.identifier);
-    const loginResults: any[] = await this.retry(() =>
+    const loginResults: any[] = await retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
         tx.$queryRaw`
           SELECT * FROM "User"
@@ -79,7 +69,7 @@ export class AuthService {
 
   private async loginSuperAdmin(dto: LoginDto): Promise<AuthResponse> {
     // Super Admin lives in the public schema — query the public SuperAdmin model
-    const admin = await this.retry(() =>
+    const admin: any = await retry(() =>
       this.prisma.superAdmin.findUnique({
         where: { email: dto.identifier },
       }),
@@ -112,7 +102,7 @@ export class AuthService {
   async changePassword(userId: string, schoolSlug: string | null, dto: ChangePasswordDto): Promise<void> {
     console.log(`Changing password for user ${userId}`);
     
-    const passwordResults: any[] = await this.retry(() =>
+    const passwordResults: any[] = await retry(() =>
       withTenant(this.prisma, schoolSlug as string, (tx) =>
         tx.$queryRaw`
           SELECT * FROM "User"
@@ -129,7 +119,7 @@ export class AuthService {
       throw new UnauthorizedException('Current password is incorrect');
 
     const hashed = await bcrypt.hash(dto.newPassword, 12);
-    await this.retry(() =>
+    await retry(() =>
       withTenant(this.prisma, schoolSlug as string, (tx) =>
         tx.$executeRaw`
           UPDATE "User"
