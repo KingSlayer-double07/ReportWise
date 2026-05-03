@@ -85,6 +85,18 @@ export class AcademicSessionController {
     })
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Returns a list of academic terms.' })
+    @Get('terms')
+    @Roles(Role.ADMIN, Role.TEACHER)
+    listTerms(@Request() req) {
+        return this.svc.listTerms(req.user.schoolSlug);
+    }
+    
+    @ApiOperation({
+        summary: 'List active academic term in a session',
+        description: 'Retrieves the active academic term for a given academic session.',
+    })
+    @ApiBearerAuth()
+    @ApiResponse({ status: 200, description: 'Returns the active academic term.' })
     @ApiResponse({ status: 404, description: 'Academic session not found.' })
     @Get('sessions/terms/active')
     @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
