@@ -112,7 +112,7 @@ export class AcademicSessionService {
     );
     const existingTerm = existingTermResult[0];
     if (existingTerm) {
-      throw new ConflictException('An academic term with the same number already exists in this session.');
+      throw new ConflictException('This academic term already exists in this session.');
     }
 
     //Ensure term dates are within session dates
