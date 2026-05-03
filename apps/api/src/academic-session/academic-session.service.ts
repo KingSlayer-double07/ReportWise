@@ -2,7 +2,11 @@ import { Injectable, Inject, NotFoundException, ConflictException } from '@nestj
 import { PRISMA_CLIENT } from '../common/prisma.module.js';
 import { withTenant, retry } from '../common/tenantHelper.utils.js';
 import { CreateSessionDto, CreateTermDto, UpdateTermDto } from '@reportwise/shared';
+import { randomUUID } from 'crypto';
+import { ApiCreateTermDto } from '../apiDtos/index.js';
 
+  const ALLOWED_TERM_NUMBERS = ['FIRST', 'SECOND', 'THIRD'] as const;
+  type TermNumber = typeof ALLOWED_TERM_NUMBERS[number];
 @Injectable()
 export class AcademicSessionService {
     constructor(
@@ -101,6 +105,11 @@ export class AcademicSessionService {
       throw new NotFoundException('Academic session not found.');
     }
 
+    //Check valid term number
+    if (!ALLOWED_TERM_NUMBERS.includes(dto.termNumber as TermNumber)) {
+      throw new ConflictException(`Invalid term number "${dto.termNumber}". Term number must be one of FIRST, SECOND or THIRD.`);
+    }
+    
     //Check duplicate term number within the same session
     const existingTermResult: any[] = await retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
@@ -118,6 +127,11 @@ export class AcademicSessionService {
     //Ensure term dates are within session dates
     if (new Date(dto.startDate) < new Date(session.startDate) || new Date(dto.endDate) > new Date(session.endDate)) {
       throw new ConflictException('Term dates must be within the academic session dates.');
+    }
+
+    //Ensure valid date range
+    if (new Date(dto.startDate) >= new Date(dto.endDate)) {
+      throw new ConflictException('Term start date must be before end date.');
     }
 
     //Ensure max of 3 terms per session
