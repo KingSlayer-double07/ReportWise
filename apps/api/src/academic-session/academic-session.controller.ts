@@ -9,7 +9,7 @@ import type { CreateSessionDto, CreateTermDto, UpdateTermDto } from '@reportwise
 import { ApiCreateSessionDto, ApiCreateTermDto, ApiUpdateTermDto } from '../apiDtos/index.js';
 
 @ApiTags('Academic Sessions')
-@Controller('academic-sessions')
+@Controller('sessions')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AcademicSessionController {
     constructor(private readonly svc: AcademicSessionService) {}
@@ -22,7 +22,7 @@ export class AcademicSessionController {
     @ApiBody({ type: ApiCreateSessionDto })
     @ApiResponse({ status: 201, description: 'The academic session has been successfully created.' })
     @ApiResponse({ status: 409, description: 'An active academic session already exists.' })
-    @Post('sessions')
+    @Post()
     @Roles(Role.ADMIN)
     createSession(@Request() req, @Body() dto: CreateSessionDto) {
         return this.svc.createSession(req.user.schoolSlug, dto);
@@ -34,7 +34,7 @@ export class AcademicSessionController {
     })
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Returns a list of academic sessions.' })
-    @Get('sessions')
+    @Get()
     @Roles(Role.ADMIN, Role.TEACHER)
     listSessions(@Request() req) {
         return this.svc.listSessions(req.user.schoolSlug);
@@ -46,7 +46,7 @@ export class AcademicSessionController {
     })
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Returns the active academic session.' })
-    @Get('sessions/active')
+    @Get('active')
     @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
     getActiveSession(@Request() req) {
         return this.svc.getActiveSession(req.user.schoolSlug);
@@ -58,7 +58,7 @@ export class AcademicSessionController {
     })
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'The academic session has been successfully activated.' })
-    @Patch('sessions/:id/activate')
+    @Patch(':id/activate')
     @Roles(Role.ADMIN)
     activateSession(@Request() req, @Param('id') id: string) {
         return this.svc.activateSession(req.user.schoolSlug, id);
@@ -73,7 +73,7 @@ export class AcademicSessionController {
     @ApiResponse({ status: 201, description: 'The academic term has been successfully created.' })
     @ApiResponse({ status: 409, description: 'Conflict Errors' })
     @ApiResponse({ status: 404, description: 'Academic session not found.' })
-    @Post('sessions/:sessionId/terms')
+    @Post(':id/terms')
     @Roles(Role.ADMIN)
     createTerm(@Request() req, @Body() dto: CreateTermDto) {
         return this.svc.createTerm(req.user.schoolSlug, dto);
@@ -98,7 +98,7 @@ export class AcademicSessionController {
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'Returns the active academic term.' })
     @ApiResponse({ status: 404, description: 'Academic session not found.' })
-    @Get('sessions/terms/active')
+    @Get('terms/active')
     @Roles(Role.ADMIN, Role.TEACHER, Role.STUDENT)
     getActiveTerm(@Request() req) {
         return this.svc.getActiveTerm(req.user.schoolSlug);
@@ -111,7 +111,7 @@ export class AcademicSessionController {
     @ApiBearerAuth()
     @ApiResponse({ status: 200, description: 'The academic term has been successfully activated.' })
     @ApiResponse({ status: 404, description: 'Academic term not found.' })
-    @Patch('sessions/terms/:termId/activate')
+    @Patch('terms/:id/activate')
     @Roles(Role.ADMIN)
     activateTerm(@Request() req, @Param('termId') termId: string) {
         return this.svc.activateTerm(req.user.schoolSlug, termId);
@@ -125,7 +125,7 @@ export class AcademicSessionController {
     @ApiBody({ type: ApiUpdateTermDto })
     @ApiResponse({ status: 200, description: 'The academic term dates have been successfully updated.' })
     @ApiResponse({ status: 404, description: 'Academic term not found.' })
-    @Patch('sessions/terms/:termId/dates')
+    @Patch('sessions/terms/:id/dates')
     @Roles(Role.ADMIN)
     updateTermDates(@Request() req, @Param('termId') termId: string, @Body() dto: UpdateTermDto) {
         return this.svc.updateTermDates(req.user.schoolSlug, termId, dto);

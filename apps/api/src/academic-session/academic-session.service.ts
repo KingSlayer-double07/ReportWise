@@ -13,7 +13,7 @@ export class AcademicSessionService {
     @Inject(PRISMA_CLIENT) private readonly prisma: any,
   ) {}
 
-  /** POST /academic-sessions Create a new academic session */
+  /** POST /sessions Create a new academic session */
   async createSession(schoolSlug: string, dto: CreateSessionDto) {
     const newSession = await retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
@@ -28,7 +28,7 @@ export class AcademicSessionService {
     return newSession;
   }
 
-  /** GET /academic-sessions Retrieve all academic sessions */
+  /** GET /sessions Retrieve all academic sessions */
   async listSessions(schoolSlug: string) {
     const sessionsResult: any[] = await retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
@@ -45,7 +45,7 @@ export class AcademicSessionService {
     return sessions;
   }
 
-  /** GET /academic-sessions/active Returns the single active academic session */
+  /** GET /sessions/active Returns the single active academic session */
   async getActiveSession(schoolSlug: string) {
     const activeSessionResult: any[] = await retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
@@ -63,7 +63,7 @@ export class AcademicSessionService {
     return activeSession;
   }
 
-  /** PATCH /academic-sessions/:id Activate an academic session */
+  /** PATCH /sessions/:id Activate an academic session */
   async activateSession(schoolSlug: string, sessionId: string) {
     const sessionResult: any[] = await retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
@@ -89,7 +89,7 @@ export class AcademicSessionService {
     );
   }
 
-  /** POST /academic-sessions/:id/create-term Create a new academic term */
+  /** POST /sessions/:id/terms Create a new academic term */
   async createTerm(schoolSlug: string, dto: CreateTermDto) {
     const sessionResult: any[] = await retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
@@ -159,7 +159,7 @@ export class AcademicSessionService {
     return newTerm;
   }
 
-  /** GET /academic-sessions Retrieve all academic sessions */
+  /** GET /sessions/terms Retrieve all academic terms */
   async listTerms(schoolSlug: string) {
     const termsResult: any[] = await retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
@@ -176,7 +176,7 @@ export class AcademicSessionService {
     return terms;
   }
   
-  /** GET /academic-sessions/:id/terms/active Retrieve the active academic term */
+  /** GET /sessions/:id/terms/active Retrieve the active academic term */
   async getActiveTerm(schoolSlug: string) {
     const activeTermResult: any[] = await retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
@@ -193,7 +193,7 @@ export class AcademicSessionService {
     return activeTerm;
   }
 
-  /** PATCH /academic-sessions/:id/terms/active Activate the active academic term */
+  /** PATCH /sessions/terms/:id/activate Activate the active academic term */
   async activateTerm(schoolSlug: string, termId: string) {
     const term = await retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
@@ -217,7 +217,7 @@ export class AcademicSessionService {
     );
   }
 
-  /** PATCH /academic-sessions/:id/terms Update academic term dates */
+  /** PATCH /sessions/terms/:id/dates Update academic term dates */
   async updateTermDates(schoolSlug: string, termId: string, dto: UpdateTermDto) {
     const term = await retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
