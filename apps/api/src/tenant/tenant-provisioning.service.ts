@@ -80,7 +80,7 @@ export class TenantProvisioningService {
       adminEmail: dto.adminEmail.trim().toLowerCase(),
       planTier: String(dto.planTier).trim().toUpperCase(),
       message:
-        'School schema provisioning completed, default SchoolConfig was seeded, and the first Admin account was created. The temporary password is emitted in the provisioning logs.',
+        'School schema provisioning completed, default SchoolConfig, AcademicSession, TermRecords and Classes were seeded, and the first Admin account was created. The temporary password is emitted in the provisioning logs.',
     };
   }
 
