@@ -39,6 +39,8 @@ const CLASS_LEVELS = [
   'JSS1', 'JSS2', 'JSS3', 'SSS1', 'SSS2', 'SSS3'
 ];
 
+const DEFAULT_TERMS = ['FIRST', 'SECOND', 'THIRD'];
+
 const CA_WEIGHT = 40;
 const EXAM_WEIGHT = 60;
 
@@ -484,6 +486,47 @@ async function seedSession(
   console.log(`✓ Default academic session "${sessionName}" created and set as active in school_${input.slug}`);
   return "created";
 }
+
+async function seedTerms(
+  client: Client,
+  input: ProvisionSchoolInput
+): Promise<"created" | "skipped"> {
+  const schemaName = `school_${input.slug}`;
+  // For simplicity, we assume that if any TermRecord records exist, then the default terms have already been seeded.
+  const existing = await client.query(
+    `SELECT id FROM "${schemaName}"."TermRecord" LIMIT 1`,
+  );
+  if (existing.rowCount && existing.rows[0]) {
+    return "skipped";
+  }
+  const sessionResult = await client.query(
+    `SELECT * FROM "${schemaName}"."AcademicSession" WHERE id = (SELECT id FROM "${schemaName}"."AcademicSession" LIMIT 1)`,
+  );
+  const sessionStartDate = new Date(sessionResult.rows[0].startDate);
+  const sessionEndDate = new Date(sessionResult.rows[0].endDate);
+  const termDuration = (sessionEndDate.getTime() - sessionStartDate.getTime()) / 3;
+  const startDate: Date[] = [sessionStartDate, new Date(sessionStartDate.getTime() + termDuration), new Date(sessionStartDate.getTime() + 2 * termDuration)];
+  const endDate: Date[] = [new Date(sessionStartDate.getTime() + termDuration - 1), new Date(sessionStartDate.getTime() + 2 * termDuration - 1), sessionEndDate];
+  // Insert default terms
+    for (let i = 0; i < DEFAULT_TERMS.length; i++) {
+      await client.query(
+      `INSERT INTO "${schemaName}"."TermRecord" (id, "sessionId", term, "startDate", "endDate", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, now())`,
+      [randomUUID(), sessionResult.rows[0].id, DEFAULT_TERMS[i], startDate[i], endDate[i]]
+    );
+    }
+
+  // Set FIRST term as active by default
+  await client.query(
+    `UPDATE "${schemaName}"."TermRecord"
+     SET "isActive" = true
+     WHERE term = 'FIRST' AND "sessionId" = $1`,
+    [sessionResult.rows[0].id]
+  )
+  console.log(`✓ Default terms created and FIRST term set as active in school_${input.slug}`);
+  return "created";
+}
+
 function runTenantOnboarding(schoolSlug: string): void {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
