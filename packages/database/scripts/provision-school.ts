@@ -450,6 +450,40 @@ async function seedClasses(
       return "created";
 }
 
+async function seedSession(
+  client: Client,
+  input: ProvisionSchoolInput
+): Promise<"created" | "skipped"> {
+  const schemaName = `school_${input.slug}`;
+  // For simplicity, we assume that if any Session records exist, then the default session has already been seeded.
+  const existing = await client.query(
+    `SELECT id FROM "${schemaName}"."AcademicSession" LIMIT 1`,
+  );
+  if (existing.rowCount && existing.rows[0]) {
+    return "skipped";
+  }
+  const currentYear = new Date().getFullYear();
+  const nextYear = currentYear + 1;
+  const sessionName = `${currentYear}/${nextYear}`;
+  const startDate = new Date(currentYear, 8, 1); // September 1st
+  const endDate = new Date(nextYear, 5, 31); // June 30th
+  
+  await client.query(
+    `INSERT INTO "${schemaName}"."AcademicSession" (id, label, "startDate", "endDate", "updatedAt")
+     VALUES ($1, $2, $3, $4, now())`,
+    [randomUUID(), sessionName, startDate, endDate]
+  );
+
+  // Set isActive for seeded session to true
+  await client.query(
+    `UPDATE "${schemaName}"."AcademicSession"
+     SET "isActive" = true
+     WHERE label = $1`,
+    [sessionName]
+  )
+  console.log(`✓ Default academic session "${sessionName}" created and set as active in school_${input.slug}`);
+  return "created";
+}
 function runTenantOnboarding(schoolSlug: string): void {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
