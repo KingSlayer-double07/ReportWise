@@ -33,15 +33,14 @@ export class TenantProvisioningService {
       '--filter',
       '@reportwise/database',
       'provision:school',
-      '--',
       '--name',
-      dto.name.trim(),
+      `"${dto.name.toString().trim()}"`,
       '--slug',
-      dto.slug.trim(),
+      `"${dto.slug.toLowerCase().trim()}"`,
       '--admin-email',
-      dto.adminEmail.trim().toLowerCase(),
+      `"${dto.adminEmail.trim().toLowerCase()}"`,
       '--plan-tier',
-      String(dto.planTier).trim().toUpperCase(),
+      `"${String(dto.planTier).trim().toUpperCase()}"`,
     ];
 
     await new Promise<void>((resolvePromise, rejectPromise) => {
@@ -49,6 +48,7 @@ export class TenantProvisioningService {
         cwd: repoRoot,
         env: process.env,
         stdio: 'inherit',
+        shell: true,
       });
 
       child.on('error', (error) => {
