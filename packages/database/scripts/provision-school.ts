@@ -439,8 +439,15 @@ async function seedDefaultSchoolConfig(
 async function seedClasses(
   client: Client,
   input: ProvisionSchoolInput
-): Promise<"created"> {
+): Promise<"created" | "skipped"> {
   const schemaName = `school_${input.slug}`;
+  // For simplicity, we assume that if any Class records exist, then the default classes have already been seeded.
+  const existing = await client.query(
+    `SELECT id FROM "${schemaName}"."Class" LIMIT 1`,
+  );
+  if (existing.rowCount && existing.rows[0]) {
+    return "skipped";
+  }
   for (const level of CLASS_LEVELS) {
         await client.query(
           `INSERT INTO "${schemaName}"."Class" (id, level, "updatedAt")
