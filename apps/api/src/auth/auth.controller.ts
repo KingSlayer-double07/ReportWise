@@ -30,6 +30,7 @@ import { ApiLoginDto, ApiChangePasswordDto } from '../apiDtos/index.js';
 // Optional response DTOs (only if you actually use them)
 import { AuthResponseDto } from './dtos/auth-response.dto.js';
 import { MeResponseDto } from './dtos/me-response.dto.js';
+import { Public } from '../common/public.decorator.js';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -52,8 +53,9 @@ export class AuthController {
     description: 'Authentication successful.',
     type: AuthResponseDto,
   })
-  @Post('login')
   @ApiResponse({ status: 201, description: 'Successful login returns JWT token and user info.' })
+  @Post('login')
+  @Public()
   login(
     @Body() dto: LoginDto,
     @Headers('x-school-slug') schoolSlug: string,
@@ -71,6 +73,7 @@ export class AuthController {
     type: AuthResponseDto,
   })
   @Post('super/login')
+  @Public()
   superLogin(@Body() dto: LoginDto) {
     return this.authService.login(dto, null);
   }
