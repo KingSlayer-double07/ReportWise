@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { PRISMA_CLIENT } from '../common/prisma.module.js';
 import { JwtPayload, Role } from '@reportwise/shared';
 import { LoginDto, ChangePasswordDto, AuthResponse } from '@reportwise/shared';
-import { withTenant } from '../common/tenantHelper.utils.js';
+import { withTenant, retry } from '../common/tenantHelper.utils.js';
 
 @Injectable()
 export class AuthService {
@@ -12,18 +12,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @Inject(PRISMA_CLIENT) private readonly prisma: any,
   ) {}
-
-  async retry<T>(fn: () => Promise<T>, retries = 3) {
-    try {
-      return await fn();
-    } catch (err: any) {
-      if (retries > 0 && err.code === 'EAI_AGAIN') {
-        await new Promise((res) => setTimeout(res, 1000));
-        return this.retry(fn, retries - 1);
-      }
-      throw err;
-    }
-  }
 
   /**
    * LOGIN
@@ -36,22 +24,24 @@ export class AuthService {
       return this.loginSuperAdmin(dto);
     }
 
-    // Tenant login — search_path already set by middleware
+    // Tenant login — search_path is set in withTenant, use raw SQL to ensure the tenant schema is targeted correctly
     console.log('Attempting to find user with identifier:', dto.identifier);
-    const results = await this.retry(() =>
-      withTenant(this.prisma, schoolSlug, (tx) =>
-        tx.$queryRawUnsafe(`
+    const loginResults: any[] = await retry(() =>
+      withTenant(
+        this.prisma,
+        schoolSlug,
+        (tx) =>
+          tx.$queryRaw`
           SELECT * FROM "User"
-          WHERE email = '${dto.identifier}'
-          OR "staffId" = '${dto.identifier}'
-          OR "admissionNumber" = '${dto.identifier}'
+          WHERE email = ${dto.identifier}
+            OR "staffId" = ${dto.identifier}
+            OR "admissionNumber" = ${dto.identifier}
           LIMIT 1
-          `),
+        `,
       ),
     );
 
-    const user = results[0];
-
+    const user = loginResults[0];
     if (!user) {
       throw new UnauthorizedException('User Not Found');
     }
@@ -73,18 +63,18 @@ export class AuthService {
       user: {
         id: user.id,
         role: user.role,
-        name: '', // populated from profile join in a real endpoint
+        name: user.name,
       },
     };
   }
 
   private async loginSuperAdmin(dto: LoginDto): Promise<AuthResponse> {
-    // Super Admin lives in the public schema — use $queryRaw to bypass search_path
-    const results = await this.retry(() => 
-      this.prisma.$queryRaw`
-        SELECT * FROM public."SuperAdmin" WHERE email = ${dto.identifier} LIMIT 1`
+    // Super Admin lives in the public schema — query the public SuperAdmin model
+    const admin: any = await retry(() =>
+      this.prisma.superAdmin.findUnique({
+        where: { email: dto.identifier },
+      }),
     );
-    const admin = results[0];
 
     if (!admin) throw new UnauthorizedException('User Not Found');
 
@@ -110,20 +100,26 @@ export class AuthService {
   }
 
   /** CHANGE PASSWORD — works for all tenant roles */
-  async changePassword(userId: string, schoolSlug: string | null, dto: ChangePasswordDto): Promise<void> {
+  async changePassword(
+    userId: string,
+    schoolSlug: string | null,
+    dto: ChangePasswordDto,
+  ): Promise<void> {
     console.log(`Changing password for user ${userId}`);
-    
-    const results = await this.retry(() => 
-      withTenant(this.prisma, schoolSlug as string, (tx) =>
-        tx.$queryRaw(`
+
+    const passwordResults: any[] = await retry(() =>
+      withTenant(
+        this.prisma,
+        schoolSlug as string,
+        (tx) =>
+          tx.$queryRaw`
           SELECT * FROM "User"
-          WHERE id = '${userId}'
+          WHERE id = ${userId}
           LIMIT 1
-          `),
+        `,
       ),
     );
-    
-    const user = results[0];
+    const user = passwordResults[0];
     if (!user) throw new UnauthorizedException('User not found');
 
     const valid = await bcrypt.compare(dto.currentPassword, user.password);
@@ -131,9 +127,16 @@ export class AuthService {
       throw new UnauthorizedException('Current password is incorrect');
 
     const hashed = await bcrypt.hash(dto.newPassword, 12);
-    await this.retry(() => 
-      withTenant(this.prisma, schoolSlug as string, (tx) =>
-        tx.$executeRaw`UPDATE "User" SET password = ${hashed}, "mustChangePassword" = false WHERE id = ${userId}`
+    await retry(() =>
+      withTenant(
+        this.prisma,
+        schoolSlug as string,
+        (tx) =>
+          tx.$executeRaw`
+          UPDATE "User"
+          SET password = ${hashed}, "mustChangePassword" = false
+          WHERE id = ${userId}
+        `,
       ),
     );
   }

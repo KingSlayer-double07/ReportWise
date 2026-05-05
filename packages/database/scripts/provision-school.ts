@@ -35,14 +35,38 @@ interface GradeBand {
   remark: string;
 }
 
-const DEFAULT_GRADE_BANDS: GradeBand[] = [
-  { min: 70, max: 100, grade: "A", remark: "Excellent" },
-  { min: 60, max: 69, grade: "B", remark: "Very Good" },
-  { min: 50, max: 59, grade: "C", remark: "Good" },
-  { min: 45, max: 49, grade: "D", remark: "Fair" },
-  { min: 40, max: 44, grade: "E", remark: "Pass" },
-  { min: 0, max: 39, grade: "F", remark: "Fail" },
+const CLASS_LEVELS = [
+  'JSS1', 'JSS2', 'JSS3', 'SSS1', 'SSS2', 'SSS3'
 ];
+
+const DEFAULT_TERMS = ['FIRST', 'SECOND', 'THIRD'];
+
+const CA_WEIGHT = 40;
+const EXAM_WEIGHT = 60;
+
+const MIN_AVERAGE_PERCENT = 50;
+const MIN_CORE_SUBJECT_PERCENT = 40;
+
+const DEFAULT_GRADE_BANDS_JSS: GradeBand[] = [
+  { min: 70, max: 100,  grade: 'A', remark: 'Distinction' },
+  { min: 60, max: 69,  grade: 'B', remark: 'Excellent' },
+  { min: 50, max: 59,  grade: 'C', remark: 'Good' },
+  { min: 40, max: 49,  grade: 'D', remark: 'Pass' },
+  { min: 0,  max: 39,  grade: 'F', remark: 'Fail' },
+];
+
+const DEFAULT_GRADE_BANDS_SSS: GradeBand[] = [
+  { min: 75, max: 100, grade: 'A1', remark: 'Excellent' },
+  { min: 70, max: 74,  grade: 'B2', remark: 'Very Good' },
+  { min: 65, max: 69,  grade: 'B3', remark: 'Good' },
+  { min: 60, max: 64,  grade: 'C4', remark: 'Credit' },
+  { min: 55, max: 59,  grade: 'C5', remark: 'Credit' },
+  { min: 50, max: 54,  grade: 'C6', remark: 'Credit' },
+  { min: 45, max: 49,  grade: 'D7', remark: 'Pass' },
+  { min: 40, max: 44,  grade: 'E8', remark: 'Pass' },
+  { min: 0,  max: 39,  grade: 'F9', remark: 'Fail' },
+];
+
 
 const DEFAULT_ADMIN_FIRST_NAME = "School";
 const DEFAULT_ADMIN_LAST_NAME = "Admin";
@@ -395,16 +419,118 @@ async function seedDefaultSchoolConfig(
           "updatedAt"
         )
       VALUES
-        ($1, 40, 60, $2::jsonb, $3::jsonb, 50, 40, $4, '#1B3A6B', now())
+        ($1, $2, $3, $4::jsonb, $5::jsonb, $6, $7, $8, '#1B3A6B', now())
     `,
     [
       randomUUID(),
-      JSON.stringify(DEFAULT_GRADE_BANDS),
-      JSON.stringify(DEFAULT_GRADE_BANDS),
+      CA_WEIGHT,
+      EXAM_WEIGHT,
+      JSON.stringify(DEFAULT_GRADE_BANDS_JSS),
+      JSON.stringify(DEFAULT_GRADE_BANDS_SSS),
+      MIN_AVERAGE_PERCENT,
+      MIN_CORE_SUBJECT_PERCENT,
       input.name,
     ],
   );
 
+  return "created";
+}
+
+async function seedClasses(
+  client: Client,
+  input: ProvisionSchoolInput
+): Promise<"created" | "skipped"> {
+  const schemaName = `school_${input.slug}`;
+  // For simplicity, we assume that if any Class records exist, then the default classes have already been seeded.
+  const existing = await client.query(
+    `SELECT id FROM "${schemaName}"."Class" LIMIT 1`,
+  );
+  if (existing.rowCount && existing.rows[0]) {
+    return "skipped";
+  }
+  for (const level of CLASS_LEVELS) {
+        await client.query(
+          `INSERT INTO "${schemaName}"."Class" (id, level, "updatedAt")
+           VALUES ($1, $2, now())`,
+          [randomUUID(), level]
+        );
+      };
+
+      return "created";
+}
+
+async function seedSession(
+  client: Client,
+  input: ProvisionSchoolInput
+): Promise<"created" | "skipped"> {
+  const schemaName = `school_${input.slug}`;
+  // For simplicity, we assume that if any Session records exist, then the default session has already been seeded.
+  const existing = await client.query(
+    `SELECT id FROM "${schemaName}"."AcademicSession" LIMIT 1`,
+  );
+  if (existing.rowCount && existing.rows[0]) {
+    return "skipped";
+  }
+  const currentYear = new Date().getFullYear();
+  const nextYear = currentYear + 1;
+  const sessionName = `${currentYear}/${nextYear}`;
+  const startDate = new Date(currentYear, 8, 1); // September 1st
+  const endDate = new Date(nextYear, 5, 31); // June 30th
+  
+  await client.query(
+    `INSERT INTO "${schemaName}"."AcademicSession" (id, label, "startDate", "endDate", "updatedAt")
+     VALUES ($1, $2, $3, $4, now())`,
+    [randomUUID(), sessionName, startDate, endDate]
+  );
+
+  // Set isActive for seeded session to true
+  await client.query(
+    `UPDATE "${schemaName}"."AcademicSession"
+     SET "isActive" = true
+     WHERE label = $1`,
+    [sessionName]
+  )
+  console.log(`✓ Default academic session "${sessionName}" created and set as active in school_${input.slug}`);
+  return "created";
+}
+
+async function seedTerms(
+  client: Client,
+  input: ProvisionSchoolInput
+): Promise<"created" | "skipped"> {
+  const schemaName = `school_${input.slug}`;
+  // For simplicity, we assume that if any TermRecord records exist, then the default terms have already been seeded.
+  const existing = await client.query(
+    `SELECT id FROM "${schemaName}"."TermRecord" LIMIT 1`,
+  );
+  if (existing.rowCount && existing.rows[0]) {
+    return "skipped";
+  }
+  const sessionResult = await client.query(
+    `SELECT * FROM "${schemaName}"."AcademicSession" WHERE id = (SELECT id FROM "${schemaName}"."AcademicSession" LIMIT 1)`,
+  );
+  const sessionStartDate = new Date(sessionResult.rows[0].startDate);
+  const sessionEndDate = new Date(sessionResult.rows[0].endDate);
+  const termDuration = (sessionEndDate.getTime() - sessionStartDate.getTime()) / 3;
+  const startDate: Date[] = [sessionStartDate, new Date(sessionStartDate.getTime() + termDuration), new Date(sessionStartDate.getTime() + 2 * termDuration)];
+  const endDate: Date[] = [new Date(sessionStartDate.getTime() + termDuration - 1), new Date(sessionStartDate.getTime() + 2 * termDuration - 1), sessionEndDate];
+  // Insert default terms
+    for (let i = 0; i < DEFAULT_TERMS.length; i++) {
+      await client.query(
+      `INSERT INTO "${schemaName}"."TermRecord" (id, "sessionId", term, "startDate", "endDate", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, now())`,
+      [randomUUID(), sessionResult.rows[0].id, DEFAULT_TERMS[i], startDate[i], endDate[i]]
+    );
+    }
+
+  // Set FIRST term as active by default
+  await client.query(
+    `UPDATE "${schemaName}"."TermRecord"
+     SET "isActive" = true
+     WHERE term = 'FIRST' AND "sessionId" = $1`,
+    [sessionResult.rows[0].id]
+  )
+  console.log(`✓ Default terms created and FIRST term set as active in school_${input.slug}`);
   return "created";
 }
 
@@ -435,12 +561,12 @@ async function provisionSchool(input: ProvisionSchoolInput): Promise<void> {
     );
     console.log(`  PlanTier:   ${input.planTier}\n`);
 
-    console.log("Step 1/5 - Provisioning tenant schema and migrations...\n");
+    console.log("Step 1/8 - Provisioning tenant schema and migrations...\n");
     runTenantOnboarding(input.slug);
 
     await client.query("BEGIN");
 
-    console.log("\nStep 2/5 - Seeding default SchoolConfig...\n");
+    console.log("\nStep 2/8 - Seeding default SchoolConfig...\n");
     const configSeedResult = await seedDefaultSchoolConfig(client, input);
 
     console.log(
@@ -449,7 +575,31 @@ async function provisionSchool(input: ProvisionSchoolInput): Promise<void> {
         : `✓ Existing SchoolConfig preserved in school_${input.slug}`,
     );
 
-    console.log("\nStep 3/5 - Creating school Admin account...\n");
+    console.log("\nStep 3/8 - Seeding default Classes...\n");
+    const classesSeedResult = await seedClasses(client, input);
+    console.log(
+      classesSeedResult === "created"
+        ? `✓ Default Classes created in school_${input.slug}`
+        : `✓ Existing Classes preserved in school_${input.slug}`,
+    );
+
+    console.log("\nStep 4/8 - Seeding default Academic Session...\n");
+    const sessionSeedResult = await seedSession(client, input);
+    console.log(
+      sessionSeedResult === "created"
+        ? `✓ Default Academic Session created in school_${input.slug}`
+        : `✓ Existing Academic Session preserved in school_${input.slug}`,
+    );
+
+    console.log("\nStep 5/8 - Seeding default Terms...\n");
+    const termsSeedResult = await seedTerms(client, input);
+    console.log(
+      termsSeedResult === "created"
+        ? `✓ Default Terms created in school_${input.slug}`
+        : `✓ Existing Terms preserved in school_${input.slug}`,
+    );
+
+    console.log("\nStep 6/8 - Creating school Admin account...\n");
     const adminProvisionResult = await createSchoolAdminAccount(client, input);
 
     if (adminProvisionResult.status === "created") {
@@ -464,11 +614,11 @@ async function provisionSchool(input: ProvisionSchoolInput): Promise<void> {
       );
     }
 
-    console.log("\nStep 4/5 - Registering school in public schema...\n");
+    console.log("\nStep 7/8 - Registering school in public schema...\n");
     await createSchoolRecord(client, input);
     await client.query("COMMIT");
 
-    console.log("\nStep 5/5 - Sending welcome email...\n");
+    console.log("\nStep 8/8 - Sending welcome email...\n");
     const welcomeEmailResult =
       adminProvisionResult.status === "created"
         ? await sendWelcomeEmail(input, adminProvisionResult.temporaryPassword)
@@ -477,6 +627,7 @@ async function provisionSchool(input: ProvisionSchoolInput): Promise<void> {
     console.log(`✓ School "${input.name}" provisioned successfully`);
     console.log(`  Schema: school_${input.slug}`);
     console.log(`  Default SchoolConfig: ${configSeedResult}`);
+    console.log(`  Default Classes: ${classesSeedResult}`);
     console.log(`  School Admin: ${adminProvisionResult.status}`);
     console.log(`  Welcome Email: ${welcomeEmailResult}`);
     console.log(`  Public record created in public."School"`);

@@ -250,7 +250,7 @@ If you need to run only one app at a time:
 ```bash
 # Frontend only
 cd apps/web
-pnpm dev
+pnpm start
 
 # Backend only
 cd apps/api

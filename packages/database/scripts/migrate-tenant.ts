@@ -25,10 +25,10 @@ interface MigrationRecord {
 
 async function migrateTenant(schoolSlug: string): Promise<void> {
   const schemaName = `school_${schoolSlug}`;
-  const directUrl  = process.env.DIRECT_URL;
+  const directUrl  = process.env.DATABASE_URL;
 
   if (!directUrl) {
-    console.error("✗ DIRECT_URL is not set. Check packages/database/.env");
+    console.error("✗ DATABASE_URL is not set. Check packages/database/.env");
     process.exit(1);
   }
 
