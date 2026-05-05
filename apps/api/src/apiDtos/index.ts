@@ -424,7 +424,15 @@ export class UpdateSchoolConfigDto {
 // CLASS & SUBJECT
 // ─────────────────────────────────────────────
 
-export class AssignSubjectDto {
+export class ApiCreateSubjectDto {
+  @ApiProperty({
+    description: "Subject name",
+    type: String
+  })
+  subjectName!: string;
+}
+
+export class ApiAssignSubjectDto {
     @ApiProperty({
         description: "Subject ID",
         type: String
