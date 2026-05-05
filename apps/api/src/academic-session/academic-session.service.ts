@@ -3,7 +3,6 @@ import { PRISMA_CLIENT } from '../common/prisma.module.js';
 import { withTenant, retry } from '../common/tenantHelper.utils.js';
 import { CreateSessionDto, CreateTermDto, UpdateTermDto } from '@reportwise/shared';
 import { randomUUID } from 'crypto';
-import { ApiCreateTermDto } from '../apiDtos/index.js';
 
   const ALLOWED_TERM_NUMBERS = ['FIRST', 'SECOND', 'THIRD'] as const;
   type TermNumber = typeof ALLOWED_TERM_NUMBERS[number];
