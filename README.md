@@ -274,8 +274,7 @@ We follow a simple branch model:
 **Workflow:**
 1. Branch off `develop` for your feature
 2. Open a pull request back into `develop` when done
-3. At least one team member reviews before merging
-4. `develop` is merged into `main` only when a release milestone is reached
+3. `develop` is merged into `main` only when a release milestone is reached
 
 ---
 
