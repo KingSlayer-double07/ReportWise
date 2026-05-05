@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { SuperAdminModule } from './super-admin/super-admin.module.js';
 import { SchoolConfigModule } from './school-config/school-config.module.js';
 import { AcademicSessionModule } from './academic-session/academic-session.module.js';
+import { ClassSubjectModule } from './class-subject/class-subject.module.js';
 
 @Module({
   controllers: [AppController],
@@ -16,7 +17,9 @@ import { AcademicSessionModule } from './academic-session/academic-session.modul
     AuthModule,
     SuperAdminModule,
     SchoolConfigModule,
-    AcademicSessionModule]
+    AcademicSessionModule,
+    ClassSubjectModule,
+  ]
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
