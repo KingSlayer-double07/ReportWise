@@ -8,6 +8,7 @@ import { SuperAdminModule } from './super-admin/super-admin.module.js';
 import { SchoolConfigModule } from './school-config/school-config.module.js';
 import { AcademicSessionModule } from './academic-session/academic-session.module.js';
 import { ClassSubjectModule } from './class-subject/class-subject.module.js';
+import { GradingModule } from './grading/grading.module.js';
 
 @Module({
   controllers: [AppController],
@@ -19,6 +20,7 @@ import { ClassSubjectModule } from './class-subject/class-subject.module.js';
     SchoolConfigModule,
     AcademicSessionModule,
     ClassSubjectModule,
+    GradingModule
   ]
 })
 export class AppModule implements NestModule {
