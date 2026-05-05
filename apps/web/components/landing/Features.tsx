@@ -38,7 +38,7 @@ export default function Features() {
 
         {/* ── Feature Grid — 4 cols, 2 rows ─────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {FEATURES.map(({ icon, title, desc }, i) => (
+          {FEATURES.map(({ icon: Icon, title, desc }, i) => (
             // <motion.div
             <div
               key={title}
@@ -50,7 +50,7 @@ export default function Features() {
               <div
                 className={`w-10 h-10 rounded-lg ${ICON_BG[i % ICON_BG.length]} flex items-center justify-center text-[18px] mb-4`}
               >
-                {icon}
+                <Icon className="w-5 h-5 text-current" />
               </div>
 
               <h3 className="font-sans text-[15px] font-bold text-[#0c1c37] mb-2 leading-snug">

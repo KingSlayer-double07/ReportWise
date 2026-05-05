@@ -5,7 +5,7 @@ const MODULES = [
   { icon: "📊", label: "Score Engine" },
   { icon: "🧮", label: "Grade Calculator" },
   { icon: "📄", label: "PDF Generator" },
-  { icon: "💳", label: "Paystack" },
+  { icon: "👨‍👩‍👧‍👦", label: "Parent Portal" },
   { icon: "🏫", label: "Class Manager" },
   { icon: "🎓", label: "Promotion Logic" },
   { icon: "👤", label: "Student Portal" },
@@ -35,7 +35,7 @@ export default function Integrations() {
           <span className="text-[gold]">Use one platform.</span>
         </h2>
         <p className="text-[17px] text-white/60 max-w-[500px] mx-auto mb-12 leading-[1.7]">
-          Everything your school needs — from score entry to payment collection
+          Everything your school needs — from score entry to parent engagement
           — is built into ReportWise. No integrations needed.
         </p>
 

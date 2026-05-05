@@ -47,8 +47,8 @@ export default function Hero() {
         {/* Subtitle */}
         <p className="text-md leading-[1.4] text-gray-500 max-w-[600px] mx-auto tracking-tight font-medium">
           ReportWise digitizes academic reporting, handling score entry, grade
-          computation, PDF report sheets, student metrics, and Paystack-powered
-          billing — all in one place.
+          computation, PDF report sheets, student metrics, and parent engagement
+          — all in one place.
         </p>
 
         {/* CTAs */}
