@@ -7,7 +7,7 @@ import { withTenant, retry } from '../common/tenantHelper.utils.js';
 export class SchoolConfigService {
   constructor(
     @Inject(PRISMA_CLIENT) private readonly prisma: any,
-  ) {}
+  ) { }
 
   /** GET the single SchoolConfig row. There is always exactly one per school. */
   async getConfig(schoolSlug: string) {
@@ -19,7 +19,6 @@ export class SchoolConfigService {
       ),
     );
     const config = results[0];
-    console.log('Fetched SchoolConfig:', config);
     if (!config) throw new NotFoundException('SchoolConfig not found');
     return config;
   }
@@ -28,22 +27,39 @@ export class SchoolConfigService {
   async updateConfig(schoolSlug: string, dto: UpdateSchoolConfigDto) {
     const config = await this.getConfig(schoolSlug);
     console.log('Update DTO:', dto);
+
+    // Build dynamic SET clause for only provided fields
+    const fields = [
+      { key: 'caWeight', value: dto.caWeight },
+      { key: 'examWeight', value: dto.examWeight },
+      { key: 'jssGradeBands', value: dto.jssGradeBands },
+      { key: 'sssGradeBands', value: dto.sssGradeBands },
+      { key: 'minAveragePercent', value: dto.minAveragePercent },
+      { key: 'minCoreSubjectPercent', value: dto.minCoreSubjectPercent },
+      { key: 'schoolName', value: dto.schoolName },
+      { key: 'primaryColor', value: dto.primaryColor },
+    ].filter(field => field.value !== undefined);
+
+    if (fields.length === 0) {
+      // No fields to update, return early
+      return config;
+    }
+
+    const setClauses = fields.map(
+      (field, i) => `"${field.key}" = $${i + 1}`
+    );
+    const values = fields.map(f => f.value);
+
     return await retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
-        tx.$executeRaw`
+        tx.$executeRawUnsafe(`
           UPDATE "SchoolConfig"
-          SET 
-            "caWeight" = ${dto.caWeight},
-            "examWeight" = ${dto.examWeight},
-            "jssGradeBands" = ${dto.jssGradeBands},
-            "sssGradeBands" = ${dto.sssGradeBands},
-            "minAveragePercent" = ${dto.minAveragePercent},
-            "minCoreSubjectPercent" = ${dto.minCoreSubjectPercent},
-            "schoolName" = ${dto.schoolName},
-            "primaryColor" = ${dto.primaryColor},
-            "updatedAt" = NOW()
-          WHERE id = ${config.id}
-        `
+          SET ${setClauses.join(', ')}, "updatedAt" = NOW()
+          WHERE id = $${values.length + 1}
+          `,
+          ...values,
+          config.id
+        )
       ),
     );
   }
