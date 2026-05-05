@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import type { Stream, TermNumber, PlanTier } from "@reportwise/database";
+import type { Stream, TermNumber, PlanTier } from "@reportwise/shared";
 
 
 // ─────────────────────────────────────────────
