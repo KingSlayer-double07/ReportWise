@@ -32,9 +32,9 @@ export class PrismaExceptionFilter implements ExceptionFilter {
 
     // Let Nest handle known HTTP exceptions properly
     if (exception instanceof HttpException) {
-      return response.status(exception.getStatus()).json(
-        exception.getResponse(),
-      );
+      return response
+        .status(exception.getStatus())
+        .json(exception.getResponse());
     }
 
     // Fallback

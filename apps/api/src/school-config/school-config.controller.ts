@@ -1,10 +1,23 @@
-import { Controller, Get, Patch, Body, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { SchoolConfigService } from './school-config.service.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { Roles } from '../common/roles.decorator.js';
 import { Role } from '@reportwise/shared';
-import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UpdateSchoolConfigDto } from '../apiDtos/index.js';
 
 @ApiTags('School Config')
@@ -18,7 +31,10 @@ export class SchoolConfigController {
     description: 'Retrieves the current school configuration settings.',
   })
   @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Returns the current school configuration.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns the current school configuration.',
+  })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
@@ -32,7 +48,10 @@ export class SchoolConfigController {
   })
   @ApiBearerAuth()
   @ApiBody({ type: UpdateSchoolConfigDto })
-  @ApiResponse({ status: 200, description: 'Returns the updated school configuration.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns the updated school configuration.',
+  })
   @Patch()
   @Roles(Role.ADMIN)
   updateConfig(@Request() req, @Body() dto: UpdateSchoolConfigDto) {

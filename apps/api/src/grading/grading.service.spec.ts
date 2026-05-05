@@ -1,4 +1,4 @@
-import { GradingService } from "./grading.service.js";
+import { GradingService } from './grading.service.js';
 describe('GradingService (unit)', () => {
   let gradingService: GradingService;
   const mockConfig = {
@@ -20,11 +20,18 @@ describe('GradingService (unit)', () => {
 
   beforeEach(() => {
     gradingService = new GradingService({} as any);
-    (gradingService as any).loadConfig = jest.fn().mockResolvedValue(mockConfig);
+    (gradingService as any).loadConfig = jest
+      .fn()
+      .mockResolvedValue(mockConfig);
   });
 
   it('calculates the correct JSS grade and remark', async () => {
-    const result = await gradingService.calculateGrade('school_pbms', 35, 55, 'JSS3');
+    const result = await gradingService.calculateGrade(
+      'school_pbms',
+      35,
+      55,
+      'JSS3',
+    );
 
     expect(result).toEqual({
       total: 90,
@@ -34,7 +41,12 @@ describe('GradingService (unit)', () => {
   });
 
   it('calculates the correct SSS grade and remark', async () => {
-    const result = await gradingService.calculateGrade('school_pbms', 25, 40, 'SSS1');
+    const result = await gradingService.calculateGrade(
+      'school_pbms',
+      25,
+      40,
+      'SSS1',
+    );
 
     expect(result).toEqual({
       total: 65,

@@ -4,24 +4,26 @@ import { GradeBand, SchoolConfig } from '@reportwise/shared';
 import { withTenant, retry } from '../common/tenantHelper.utils.js';
 
 export interface GradeResult {
-  total:     number;   // rounded to 2dp
-  grade:     string;
-  remark:    string;
+  total: number; // rounded to 2dp
+  grade: string;
+  remark: string;
 }
 
 @Injectable()
 export class GradingService {
-  constructor(
-    @Inject(PRISMA_CLIENT) private readonly prisma: any,
-  ) {}
+  constructor(@Inject(PRISMA_CLIENT) private readonly prisma: any) {}
 
   /** Loads SchoolConfig from DB. Always reads from DB — no caching. */
   private async loadConfig(schoolSlug: string): Promise<SchoolConfig> {
     return await retry(() =>
-    withTenant(this.prisma, schoolSlug, (tx) => 
-    tx.$queryRaw`
+      withTenant(
+        this.prisma,
+        schoolSlug,
+        (tx) =>
+          tx.$queryRaw`
     SELECT * FROM "SchoolConfig" LIMIT 1
-    `)
+    `,
+      ),
     );
   }
 
@@ -41,10 +43,14 @@ export class GradingService {
 
     // Validate inputs
     if (caScore > config.caWeight) {
-      throw new BadRequestException(`CA score ${caScore} exceeds max weight ${config.caWeight}`);
+      throw new BadRequestException(
+        `CA score ${caScore} exceeds max weight ${config.caWeight}`,
+      );
     }
     if (examScore > config.examWeight) {
-      throw new BadRequestException(`Exam score ${examScore} exceeds max weight ${config.examWeight}`);
+      throw new BadRequestException(
+        `Exam score ${examScore} exceeds max weight ${config.examWeight}`,
+      );
     }
 
     // Total = caScore + examScore (both are already out of their weight)
@@ -54,11 +60,11 @@ export class GradingService {
     // Pick grade band set based on class level
     const isSSS = classLevel.startsWith('SSS');
     const bands: GradeBand[] = isSSS
-      ? (config.sssGradeBands as GradeBand[])
-      : (config.jssGradeBands as GradeBand[]);
+      ? config.sssGradeBands
+      : config.jssGradeBands;
 
     // Find the matching band
-    const band = bands.find(b => total >= b.min && total <= b.max);
+    const band = bands.find((b) => total >= b.min && total <= b.max);
 
     if (!band) {
       // Fallback — should never happen if bands are configured correctly
@@ -80,12 +86,15 @@ export class GradingService {
 
     if (scores.length === 0) return false;
 
-    const overallAvg = scores.reduce((s, sc) => s + sc.total, 0) / scores.length;
+    const overallAvg =
+      scores.reduce((s, sc) => s + sc.total, 0) / scores.length;
     if (overallAvg < config.minAveragePercent) return false;
 
     // Core subjects must each individually meet the minimum
-    const coreScores = scores.filter(s => s.isCore);
-    const failedCore = coreScores.some(s => s.total < config.minCoreSubjectPercent);
+    const coreScores = scores.filter((s) => s.isCore);
+    const failedCore = coreScores.some(
+      (s) => s.total < config.minCoreSubjectPercent,
+    );
     if (failedCore) return false;
 
     return true;

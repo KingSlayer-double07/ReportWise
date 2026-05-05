@@ -20,13 +20,11 @@ import { GradingModule } from './grading/grading.module.js';
     SchoolConfigModule,
     AcademicSessionModule,
     ClassSubjectModule,
-    GradingModule
-  ]
+    GradingModule,
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-    .apply(TenantMiddleware)
-    .forRoutes('*'); // Apply to all routes, guards will handle auth/tenant checks
+    consumer.apply(TenantMiddleware).forRoutes('*'); // Apply to all routes, guards will handle auth/tenant checks
   }
 }

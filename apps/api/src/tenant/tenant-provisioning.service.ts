@@ -104,7 +104,9 @@ export class TenantProvisioningService {
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dto.adminEmail.trim())) {
-      throw new BadRequestException('Admin email must be a valid email address');
+      throw new BadRequestException(
+        'Admin email must be a valid email address',
+      );
     }
 
     if (!String(dto.planTier ?? '').trim()) {

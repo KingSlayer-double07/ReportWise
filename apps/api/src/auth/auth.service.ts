@@ -13,8 +13,6 @@ export class AuthService {
     @Inject(PRISMA_CLIENT) private readonly prisma: any,
   ) {}
 
-  
-
   /**
    * LOGIN
    * identifier = email (Admin) | staffId (Teacher) | admissionNumber (Student)
@@ -29,8 +27,11 @@ export class AuthService {
     // Tenant login — search_path is set in withTenant, use raw SQL to ensure the tenant schema is targeted correctly
     console.log('Attempting to find user with identifier:', dto.identifier);
     const loginResults: any[] = await retry(() =>
-      withTenant(this.prisma, schoolSlug, (tx) =>
-        tx.$queryRaw`
+      withTenant(
+        this.prisma,
+        schoolSlug,
+        (tx) =>
+          tx.$queryRaw`
           SELECT * FROM "User"
           WHERE email = ${dto.identifier}
             OR "staffId" = ${dto.identifier}
@@ -62,7 +63,7 @@ export class AuthService {
       user: {
         id: user.id,
         role: user.role,
-        name: user.name, 
+        name: user.name,
       },
     };
   }
@@ -99,12 +100,19 @@ export class AuthService {
   }
 
   /** CHANGE PASSWORD — works for all tenant roles */
-  async changePassword(userId: string, schoolSlug: string | null, dto: ChangePasswordDto): Promise<void> {
+  async changePassword(
+    userId: string,
+    schoolSlug: string | null,
+    dto: ChangePasswordDto,
+  ): Promise<void> {
     console.log(`Changing password for user ${userId}`);
-    
+
     const passwordResults: any[] = await retry(() =>
-      withTenant(this.prisma, schoolSlug as string, (tx) =>
-        tx.$queryRaw`
+      withTenant(
+        this.prisma,
+        schoolSlug as string,
+        (tx) =>
+          tx.$queryRaw`
           SELECT * FROM "User"
           WHERE id = ${userId}
           LIMIT 1
@@ -120,8 +128,11 @@ export class AuthService {
 
     const hashed = await bcrypt.hash(dto.newPassword, 12);
     await retry(() =>
-      withTenant(this.prisma, schoolSlug as string, (tx) =>
-        tx.$executeRaw`
+      withTenant(
+        this.prisma,
+        schoolSlug as string,
+        (tx) =>
+          tx.$executeRaw`
           UPDATE "User"
           SET password = ${hashed}, "mustChangePassword" = false
           WHERE id = ${userId}

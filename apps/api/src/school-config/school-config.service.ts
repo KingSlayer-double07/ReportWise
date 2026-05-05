@@ -5,17 +5,18 @@ import { withTenant, retry } from '../common/tenantHelper.utils.js';
 
 @Injectable()
 export class SchoolConfigService {
-  constructor(
-    @Inject(PRISMA_CLIENT) private readonly prisma: any,
-  ) { }
+  constructor(@Inject(PRISMA_CLIENT) private readonly prisma: any) {}
 
   /** GET the single SchoolConfig row. There is always exactly one per school. */
   async getConfig(schoolSlug: string) {
     const results: any[] = await retry(() =>
-      withTenant(this.prisma, schoolSlug, (tx) =>
-        tx.$queryRaw`
+      withTenant(
+        this.prisma,
+        schoolSlug,
+        (tx) =>
+          tx.$queryRaw`
           SELECT * FROM "SchoolConfig" LIMIT 1
-        `
+        `,
       ),
     );
     const config = results[0];
@@ -38,28 +39,27 @@ export class SchoolConfigService {
       { key: 'minCoreSubjectPercent', value: dto.minCoreSubjectPercent },
       { key: 'schoolName', value: dto.schoolName },
       { key: 'primaryColor', value: dto.primaryColor },
-    ].filter(field => field.value !== undefined);
+    ].filter((field) => field.value !== undefined);
 
     if (fields.length === 0) {
       // No fields to update, return early
       return config;
     }
 
-    const setClauses = fields.map(
-      (field, i) => `"${field.key}" = $${i + 1}`
-    );
-    const values = fields.map(f => f.value);
+    const setClauses = fields.map((field, i) => `"${field.key}" = $${i + 1}`);
+    const values = fields.map((f) => f.value);
 
     return await retry(() =>
       withTenant(this.prisma, schoolSlug, (tx) =>
-        tx.$executeRawUnsafe(`
+        tx.$executeRawUnsafe(
+          `
           UPDATE "SchoolConfig"
           SET ${setClauses.join(', ')}, "updatedAt" = NOW()
           WHERE id = $${values.length + 1}
           `,
           ...values,
-          config.id
-        )
+          config.id,
+        ),
       ),
     );
   }

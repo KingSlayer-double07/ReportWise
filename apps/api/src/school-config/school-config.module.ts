@@ -7,6 +7,6 @@ import { AuthModule } from '../auth/auth.module.js';
   imports: [AuthModule],
   providers: [SchoolConfigService],
   controllers: [SchoolConfigController],
-  exports: [SchoolConfigService],  // exported so GradingService can inject it
+  exports: [SchoolConfigService], // exported so GradingService can inject it
 })
 export class SchoolConfigModule {}

@@ -23,7 +23,6 @@ import {
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 
-
 import type { LoginDto, ChangePasswordDto } from '@reportwise/shared';
 import { ApiLoginDto, ApiChangePasswordDto } from '../apiDtos/index.js';
 
@@ -35,7 +34,7 @@ import { Public } from '../common/public.decorator.js';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   /** Admin / Teacher / Student login */
   @ApiOperation({
@@ -53,13 +52,13 @@ export class AuthController {
     description: 'Authentication successful.',
     type: AuthResponseDto,
   })
-  @ApiResponse({ status: 201, description: 'Successful login returns JWT token and user info.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Successful login returns JWT token and user info.',
+  })
   @Post('login')
   @Public()
-  login(
-    @Body() dto: LoginDto,
-    @Headers('x-school-slug') schoolSlug: string,
-  ) {
+  login(@Body() dto: LoginDto, @Headers('x-school-slug') schoolSlug: string) {
     return this.authService.login(dto, schoolSlug);
   }
 
@@ -91,8 +90,14 @@ export class AuthController {
   @Post('change-password')
   @HttpCode(HttpStatus.NO_CONTENT)
   changePassword(@Request() req, @Body() dto: ChangePasswordDto) {
-    console.log(`Received password change request for user ${req.user.schoolSlug}/${req.user.sub}`);
-    return this.authService.changePassword(req.user.sub, req.user.schoolSlug, dto);
+    console.log(
+      `Received password change request for user ${req.user.schoolSlug}/${req.user.sub}`,
+    );
+    return this.authService.changePassword(
+      req.user.sub,
+      req.user.schoolSlug,
+      dto,
+    );
   }
 
   /** Get current authenticated user */
