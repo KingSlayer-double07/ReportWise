@@ -6,12 +6,12 @@ export const PRISMA_CLIENT = 'PRISMA_CLIENT';
 
 @Global()
 @Module({
-    providers: [
-        {
-            provide: PRISMA_CLIENT,
-            useValue: prisma
-        }
-    ],
-    exports: [PRISMA_CLIENT]
+  providers: [
+    {
+      provide: PRISMA_CLIENT,
+      useValue: prisma,
+    },
+  ],
+  exports: [PRISMA_CLIENT],
 })
 export class PrismaModule {}

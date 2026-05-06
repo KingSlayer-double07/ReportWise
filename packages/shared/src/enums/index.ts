@@ -6,7 +6,7 @@ export enum Role {
 }
 
 export enum Stream {
-  ART        = "ART",
+  ART        = "ARTS",
   COMMERCIAL = "COMMERCIAL",
   SCIENCE    = "SCIENCE",
   NONE       = "NONE",

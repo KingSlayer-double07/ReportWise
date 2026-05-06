@@ -188,6 +188,12 @@ NEXT_PUBLIC_WEB_URL=http://localhost:3000
 # Supabase PostgreSQL connection string
 # Get this from: Supabase → your project → Settings → Database → URI
 DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres"
+DIRECT_URL="postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres"
+
+# Welcome email delivery for manual school provisioning
+RESEND_API_KEY=re_your_key_here
+RESEND_FROM_EMAIL="ReportWise <welcome@reportwise.ng>"
+NEXT_PUBLIC_WEB_URL=http://localhost:3000
 ```
 
 ### `apps/api/.env`
@@ -244,7 +250,7 @@ If you need to run only one app at a time:
 ```bash
 # Frontend only
 cd apps/web
-pnpm dev
+pnpm start
 
 # Backend only
 cd apps/api
@@ -268,8 +274,7 @@ We follow a simple branch model:
 **Workflow:**
 1. Branch off `develop` for your feature
 2. Open a pull request back into `develop` when done
-3. At least one team member reviews before merging
-4. `develop` is merged into `main` only when a release milestone is reached
+3. `develop` is merged into `main` only when a release milestone is reached
 
 ---
 
