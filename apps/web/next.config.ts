@@ -10,6 +10,7 @@ const nextConfig = withPWA({
     disableDevLogs: true,
   },
 })({
+  transpilePackages: ["@reportwise/shared"],
   turbopack: {},
 })
 
