@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { PRISMA_CLIENT } from '../common/prisma.module.js';
 import { JwtPayload, Role } from '@reportwise/shared';
 import { LoginDto, ChangePasswordDto, AuthResponse } from '@reportwise/shared';
+import { withTenant, retry } from '../common/tenantHelper.utils.js';
 
 @Injectable()
 export class AuthService {
@@ -23,29 +24,36 @@ export class AuthService {
       return this.loginSuperAdmin(dto);
     }
 
-    // Tenant login — search_path already set by middleware
-    const user = await this.prisma.user.findFirst({
-      where: {
-        OR: [
-          { email:           dto.identifier },
-          { staffId:         dto.identifier },
-          { admissionNumber: dto.identifier },
-        ],
-      },
-    });
+    // Tenant login — search_path is set in withTenant, use raw SQL to ensure the tenant schema is targeted correctly
+    console.log('Attempting to find user with identifier:', dto.identifier);
+    const loginResults: any[] = await retry(() =>
+      withTenant(
+        this.prisma,
+        schoolSlug,
+        (tx) =>
+          tx.$queryRaw`
+          SELECT * FROM "User"
+          WHERE email = ${dto.identifier}
+            OR "staffId" = ${dto.identifier}
+            OR "admissionNumber" = ${dto.identifier}
+          LIMIT 1
+        `,
+      ),
+    );
 
+    const user = loginResults[0];
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('User Not Found');
     }
 
     const passwordValid = await bcrypt.compare(dto.password, user.password);
     if (!passwordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Wrong Password');
     }
 
     const payload: JwtPayload = {
-      sub:        user.id,
-      role:       user.role,
+      sub: user.id,
+      role: user.role,
       schoolSlug: schoolSlug,
       mustChangePassword: user.mustChangePassword,
     };
@@ -53,31 +61,37 @@ export class AuthService {
     return {
       accessToken: this.jwtService.sign(payload),
       user: {
-        id:   user.id,
+        id: user.id,
         role: user.role,
-        name: '', // populated from profile join in a real endpoint
+        name: user.name,
       },
     };
   }
 
   private async loginSuperAdmin(dto: LoginDto): Promise<AuthResponse> {
-    // Super Admin lives in the public schema — use $queryRaw to bypass search_path
-    const results = await this.prisma.$queryRaw`
-      SELECT * FROM public."SuperAdmin" WHERE email = ${dto.identifier} LIMIT 1
-    `;
-    const admin = results[0];
+    // Super Admin lives in the public schema — query the public SuperAdmin model
+    const admin: any = await retry(() =>
+      this.prisma.superAdmin.findUnique({
+        where: { email: dto.identifier },
+      }),
+    );
 
-    if (!admin) throw new UnauthorizedException('Invalid credentials');
+    if (!admin) throw new UnauthorizedException('User Not Found');
 
     const valid = await bcrypt.compare(dto.password, admin.password);
-    if (!valid) throw new UnauthorizedException('Invalid credentials');
+    if (!valid) throw new UnauthorizedException('Wrong Password');
 
     const payload: JwtPayload = {
-      sub:        admin.id,
-      role:       Role.SUPER_ADMIN,
+      sub: admin.id,
+      role: Role.SUPER_ADMIN,
       schoolSlug: null, // deliberately null — middleware skips search_path injection
       mustChangePassword: false, // Super Admins don't need a mustChangePassword flag
     };
+
+    console.log('Super Admin login successful:', {
+      email: dto.identifier,
+      id: admin.id,
+    });
 
     return {
       accessToken: this.jwtService.sign(payload),
@@ -86,20 +100,44 @@ export class AuthService {
   }
 
   /** CHANGE PASSWORD — works for all tenant roles */
-  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
-    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+  async changePassword(
+    userId: string,
+    schoolSlug: string | null,
+    dto: ChangePasswordDto,
+  ): Promise<void> {
+    console.log(`Changing password for user ${userId}`);
+
+    const passwordResults: any[] = await retry(() =>
+      withTenant(
+        this.prisma,
+        schoolSlug as string,
+        (tx) =>
+          tx.$queryRaw`
+          SELECT * FROM "User"
+          WHERE id = ${userId}
+          LIMIT 1
+        `,
+      ),
+    );
+    const user = passwordResults[0];
     if (!user) throw new UnauthorizedException('User not found');
 
     const valid = await bcrypt.compare(dto.currentPassword, user.password);
-    if (!valid) throw new UnauthorizedException('Current password is incorrect');
+    if (!valid)
+      throw new UnauthorizedException('Current password is incorrect');
 
     const hashed = await bcrypt.hash(dto.newPassword, 12);
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        password: hashed,
-        mustChangePassword: false,
-      },
-    });
+    await retry(() =>
+      withTenant(
+        this.prisma,
+        schoolSlug as string,
+        (tx) =>
+          tx.$executeRaw`
+          UPDATE "User"
+          SET password = ${hashed}, "mustChangePassword" = false
+          WHERE id = ${userId}
+        `,
+      ),
+    );
   }
 }

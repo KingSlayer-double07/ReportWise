@@ -126,6 +126,8 @@ model User {
   admin Admin?
   teacher Teacher?
   student Student?
+
+  @@map("User") // "User" is a reserved keyword in PostgreSQL, so we need to explicitly map it to avoid issues
 }
 
 // --- Profiles ------------------

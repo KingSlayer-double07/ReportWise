@@ -156,6 +156,13 @@ export interface CreateTermDto {
   endDate:    string;
 }
 
+export interface UpdateTermDto {
+  termId:     string;
+  termNumber?: TermNumber;
+  startDate?:  string;
+  endDate?:    string;
+}
+
 // ─────────────────────────────────────────────
 // SUPER ADMIN
 // ─────────────────────────────────────────────

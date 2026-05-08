@@ -35,3 +35,24 @@ Each new school is onboarded by running:
 
 This creates the schema and applies all tenant-level migrations.
 The full migration runner is implemented in Sprint 2.
+
+## Manual Super Admin provisioning
+For a manual Super Admin-driven onboarding flow, run:
+  npx ts-node scripts/provision-school.ts --name "Greenfield Academy" --slug greenfield --admin-email admin@greenfield.edu.ng --plan-tier SMALL
+
+This command:
+- validates the incoming school metadata
+- provisions and migrates the tenant schema
+- seeds a default `SchoolConfig` inside the tenant schema
+- creates the first school Admin account with a temporary password
+- creates the matching record in `public."School"`
+- sends the school Admin a welcome email when `RESEND_API_KEY` is configured
+
+The temporary Admin password is printed during provisioning, sent in the welcome email, and should be changed on first login.
+
+Welcome email delivery uses the official Resend Node.js SDK:
+  RESEND_API_KEY="re_your_key_here"
+  RESEND_FROM_EMAIL="ReportWise <welcome@reportwise.ng>"
+  NEXT_PUBLIC_WEB_URL="http://localhost:3000"
+
+Reference: https://resend.com/docs/send-with-nodejs

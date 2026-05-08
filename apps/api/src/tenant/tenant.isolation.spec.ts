@@ -19,13 +19,15 @@ describe('Cross-Tenant Isolation', () => {
     const result = await client.query('SELECT id FROM "User"');
     // Result should only contain school_pbms records
     // Verify by checking that school_tender_steps's user ID is NOT in the result
-    expect(result.rows.map(r => r.id)).not.toContain('SCHOOL_TENDER_STEPS_USER_ID');
+    expect(result.rows.map((r) => r.id)).not.toContain(
+      'SCHOOL_TENDER_STEPS_USER_ID',
+    );
   });
 
   it('school_tender_steps cannot see school_pbms users', async () => {
     await client.query(`SET search_path TO "school_tender_steps", public`);
     const result = await client.query('SELECT id FROM "User"');
-    expect(result.rows.map(r => r.id)).not.toContain('SCHOOL_PBMS_USER_ID');
+    expect(result.rows.map((r) => r.id)).not.toContain('SCHOOL_PBMS_USER_ID');
   });
 
   it('public schema is accessible from both tenants', async () => {

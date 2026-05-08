@@ -43,8 +43,6 @@ try {
 
   console.log(`\n========================================`);
   console.log(`  ✓ School "${slug}" is ready`);
-  console.log(`  Next: run the seed script to create`);
-  console.log(`  default config and Admin account`);
   console.log(`========================================\n`);
 
 } catch {
