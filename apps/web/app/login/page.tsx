@@ -3,6 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { LogoMark } from "@/components/icons";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { Role } from "@reportwise/shared";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 // ── Decorative stat cards shown on the right panel ────────────────────────────
 const STATS = [
@@ -31,12 +39,23 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState<Role>(Role.ADMIN);
+  const { login } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: wire up auth
-    setTimeout(() => setLoading(false), 1500);
+    
+    // MOCK LOGIN for now
+    setTimeout(() => {
+      login("mock_token", {
+        id: "1",
+        name: role === Role.ADMIN ? "Admin User" : role === Role.TEACHER ? "Teacher User" : "Student User",
+        email,
+        role: role,
+      });
+      setLoading(false);
+    }, 1500);
   };
 
   return (
@@ -66,7 +85,7 @@ export default function LoginPage() {
           </Link>
 
           {/* Heading */}
-          <div className="mb-8">
+          <div className="mb-6">
             <h1 className="text-[32px] font-black tracking-tighter text-[#0c1c37] font-dm leading-none mb-2">
               Welcome back
             </h1>
@@ -75,99 +94,83 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {/* Role Selector */}
+          <Tabs value={role} onValueChange={(v) => setRole(v as Role)} className="mb-8">
+            <TabsList className="w-full h-11 p-1 bg-muted rounded-xl">
+              {[Role.ADMIN, Role.TEACHER, Role.STUDENT].map((r) => (
+                <TabsTrigger
+                  key={r}
+                  value={r}
+                  className="rounded-lg font-bold data-active:shadow-sm"
+                >
+                  {r.charAt(0) + r.slice(1).toLowerCase()}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+
           {/* Form */}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             {/* Email */}
-            <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="login-email"
-                className="text-[13px] font-semibold text-[#0c1c37]"
-              >
-                Email address
-              </label>
+            <div className="space-y-2">
+              <Label htmlFor="login-email">Email address</Label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                    <polyline points="22,6 12,13 2,6" />
-                  </svg>
-                </span>
-                <input
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground size-4 pointer-events-none" />
+                <Input
                   id="login-email"
                   type="email"
                   placeholder="admin@yourschool.edu.ng"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  autoComplete="email"
-                  className="w-full pl-10 pr-4 py-3 rounded-[10px] border border-[#0c1c37]/[0.15] bg-white text-[#0c1c37] text-[14px] placeholder-gray-400 outline-none transition-all duration-200 focus:border-[#0c1c37]/50 focus:ring-3 focus:ring-[#0c1c37]/[0.08]"
+                  className="pl-10 h-12 rounded-xl"
                 />
               </div>
             </div>
 
             {/* Password */}
-            <div className="flex flex-col gap-1.5">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label
-                  htmlFor="login-password"
-                  className="text-[13px] font-semibold text-[#0c1c37]"
-                >
-                  Password
-                </label>
+                <Label htmlFor="login-password">Password</Label>
                 <Link
                   href="/forgot-password"
-                  className="text-[12px] text-[#3c5580] font-medium hover:text-[goldenrod] transition-colors no-underline"
+                  className="text-xs text-muted-foreground font-medium hover:text-primary transition-colors"
                 >
                   Forgot password?
                 </Link>
               </div>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
-                </span>
-                <input
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground size-4 pointer-events-none" />
+                <Input
                   id="login-password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  autoComplete="current-password"
-                  className="w-full pl-10 pr-11 py-3 rounded-[10px] border border-[#0c1c37]/[0.15] bg-white text-[#0c1c37] text-[14px] placeholder-gray-400 outline-none transition-all duration-200 focus:border-[#0c1c37]/50 focus:ring-3 focus:ring-[#0c1c37]/[0.08]"
+                  className="pl-10 pr-12 h-12 rounded-xl"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#0c1c37] transition-colors bg-transparent border-none cursor-pointer p-0"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 hover:bg-transparent"
                 >
-                  <EyeIcon open={showPassword} />
-                </button>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </Button>
               </div>
             </div>
 
             {/* Submit */}
-            <button
+            <Button
               id="login-submit"
               type="submit"
               disabled={loading}
-              className="mt-1 w-full py-3.5 rounded-[10px] bg-[#0c1c37] text-white font-bold text-[15px] tracking-tight shadow-[0_4px_20px_rgba(12,28,55,0.30)] transition-all duration-200 hover:bg-[goldenrod] hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer border-none"
+              className="h-12 rounded-xl font-bold text-base shadow-xl shadow-primary/20 transition-all hover:-translate-y-0.5"
             >
-              {loading ? (
-                <span className="inline-flex items-center gap-2">
-                  <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
-                    <path d="M12 2a10 10 0 0 1 10 10" />
-                  </svg>
-                  Signing in…
-                </span>
-              ) : (
-                "Sign in"
-              )}
-            </button>
+              {loading ? "Signing in…" : "Sign in"}
+            </Button>
           </form>
 
           {/* Footer link */}

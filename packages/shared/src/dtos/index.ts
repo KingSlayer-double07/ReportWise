@@ -1,4 +1,4 @@
-import { Stream, ClassLevel, TermNumber, PlanTier } from "../enums/index.js";
+import { Stream, ClassLevel, TermNumber, PlanTier } from "../enums/index";
 
 // ─────────────────────────────────────────────
 // AUTH
