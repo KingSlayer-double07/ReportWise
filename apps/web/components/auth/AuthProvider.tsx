@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Role } from "@reportwise/shared";
 
@@ -26,29 +26,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // const [token, setToken] = useState<string | null>(null);
   // const [isLoading, setIsLoading] = useState(true);
 
-  const [user, setUser] = useState<User | null>({
-    id: "1",
-    name: "Preview User",
-    role: Role.ADMIN, // Change this to Role.TEACHER to see the teacher view
+  const [user, setUser] = useState<User | null>(() => {
+    const storedUser = typeof window !== "undefined" ? localStorage.getItem("rw_user") : null;
+    return storedUser
+      ? JSON.parse(storedUser)
+      : {
+          id: "1",
+          name: "Preview User",
+          role: Role.ADMIN, // Change this to Role.TEACHER to see the teacher view
+        };
   });
-  const [token, setToken] = useState<string | null>("mock_token");
+  const [token, setToken] = useState<string | null>(() => {
+    const storedToken = typeof window !== "undefined" ? localStorage.getItem("rw_token") : null;
+    return storedToken || "mock_token";
+  });
   const [isLoading, setIsLoading] = useState(false); // Set to false so it doesn't show the spinner
 
   const router = useRouter();
 
-  useEffect(() => {
-    // Load from localStorage on mount
-    const storedToken = localStorage.getItem("rw_token");
-    const storedUser = localStorage.getItem("rw_user");
-
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
-  }, []);
-
   const login = (newToken: string, newUser: User) => {
+    setIsLoading(true);
     setToken(newToken);
     setUser(newUser);
     localStorage.setItem("rw_token", newToken);
@@ -62,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       router.push("/dashboard/student");
     }
+    setIsLoading(false);
   };
 
   const logout = () => {

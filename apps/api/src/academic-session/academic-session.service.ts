@@ -14,7 +14,6 @@ import {
 import { randomUUID } from 'crypto';
 
 const ALLOWED_TERM_NUMBERS = ['FIRST', 'SECOND', 'THIRD'] as const;
-type TermNumber = (typeof ALLOWED_TERM_NUMBERS)[number];
 @Injectable()
 export class AcademicSessionService {
   constructor(@Inject(PRISMA_CLIENT) private readonly prisma: any) {}
@@ -130,7 +129,7 @@ export class AcademicSessionService {
     }
 
     //Check valid term number
-    if (!ALLOWED_TERM_NUMBERS.includes(dto.termNumber as TermNumber)) {
+    if (!ALLOWED_TERM_NUMBERS.includes(dto.termNumber)) {
       throw new ConflictException(
         `Invalid term number "${dto.termNumber}". Term number must be one of FIRST, SECOND or THIRD.`,
       );
