@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowLeft, Save, Upload } from "lucide-react";
+import { useRef, useState } from "react";
+import { ArrowLeft, Save, Upload, X } from "lucide-react";
 import { ActionButton } from "@/components/ui/ActionButton";
 import { useRouter } from "next/navigation";
 import { Stream, ClassLevel } from "@reportwise/shared";
@@ -10,6 +10,29 @@ import Link from "next/link";
 export default function NewStudentPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setPhotoError("Photo must be under 2MB.");
+      return;
+    }
+    setPhotoError(null);
+    const reader = new FileReader();
+    reader.onload = () => setPhotoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const clearPhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPhotoPreview(null);
+    setPhotoError(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,15 +62,49 @@ export default function NewStudentPage() {
       <form onSubmit={handleSubmit} className="space-y-8 pb-20">
         {/* Photo Upload */}
         <div className="bg-white p-8 rounded-lg border border-[#0c1c37]/10 hover:border-[#0c1c37] duration-300 shadow-lg/5 hover:shadow-lg/10 flex items-center gap-8">
-          <div className="w-24 h-24 rounded-full bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 gap-1 overflow-hidden">
-            <Upload size={24} />
-            <span className="text-[10px] font-bold uppercase">Upload</span>
-          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoChange}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="relative w-24 h-24 rounded-full bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 gap-1 overflow-hidden cursor-pointer hover:border-[#0c1c37]/40 hover:bg-gray-100 transition-all group"
+          >
+            {photoPreview ? (
+              <>
+                <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-full">
+                  <Upload size={18} className="text-white" />
+                </div>
+              </>
+            ) : (
+              <>
+                <Upload size={24} />
+                <span className="text-[10px] font-bold uppercase">Upload</span>
+              </>
+            )}
+          </button>
           <div>
             <h3 className="text-[15px] font-bold text-[#0c1c37] mb-1">Student Photo</h3>
             <p className="text-[13px] text-gray-400 max-w-xs">
               Upload a clear passport-style photo. Max size 2MB.
             </p>
+            {photoPreview && (
+              <button
+                type="button"
+                onClick={clearPhoto}
+                className="mt-2 flex items-center gap-1 text-[12px] text-red-400 hover:text-red-600 transition-colors font-semibold"
+              >
+                <X size={12} /> Remove photo
+              </button>
+            )}
+            {photoError && (
+              <p className="mt-1 text-[12px] text-red-500 font-semibold">{photoError}</p>
+            )}
           </div>
         </div>
 

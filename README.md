@@ -110,13 +110,17 @@ git clone https://github.com/KingSlayer-double07/ReportWise.git
 cd ReportWise
 ```
 
-### 2. Install all dependencies
+### 2. Install dependencies and build shared package
 
-Run this from the **root** of the repo — pnpm workspaces will install dependencies for all apps and packages in one command:
+> ⚠️ **Important:** The `@reportwise/shared` package must be compiled before the apps can start. Its `dist/` output is gitignored, so it is **never present after a fresh clone or pull.** Skipping this step causes a `Module not found: Can't resolve '@reportwise/shared'` error and a blank 404 page in the browser.
+
+Run the `setup` script — it handles both `pnpm install` and the shared build in one command:
 
 ```bash
-pnpm install
+pnpm run setup
 ```
+
+> If you later pull changes that modify `packages/shared/src/`, run `pnpm run setup` again (or just `pnpm --filter @reportwise/shared build`) before restarting the dev server.
 
 ### 3. Set up environment variables
 
@@ -158,7 +162,7 @@ When prompted, give the migration a name like `init`.
 pnpm dev
 ```
 
-This starts both `apps/web` (Next.js on port 3000) and `apps/api` (NestJS on port 3001) simultaneously via Turborepo.
+> ⚠️ **Always run `pnpm dev` from the repo root.** Never run `next dev` or `pnpm dev` from inside `apps/web/` — it bypasses the monorepo setup and breaks module resolution.
 
 ### 8. Verify everything is running
 
@@ -245,16 +249,16 @@ The Prisma config (including the database URL) lives at `packages/database/prism
 
 ## Running the Apps Individually
 
-If you need to run only one app at a time:
+> ⚠️ **Do not run apps directly from their subdirectories** (e.g. `cd apps/web && pnpm dev`). This bypasses the pnpm workspace and Turborepo setup, breaking module resolution for `@reportwise/shared` and other workspace packages.
+
+Use the Turbo filter flag instead — always from the **repo root**:
 
 ```bash
 # Frontend only
-cd apps/web
-pnpm start
+pnpm turbo dev --filter=web
 
 # Backend only
-cd apps/api
-pnpm start:dev
+pnpm turbo dev --filter=api
 ```
 
 ---
