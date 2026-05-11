@@ -59,7 +59,7 @@ export default function ConfigPage() {
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={cn(
-              "px-8 py-2.5 rounded-lg text-[14px] font-bold transition-all border-none cursor-pointer",
+              "px-8 py-2 rounded-lg text-[14px] font-bold transition-all border-none cursor-pointer",
               activeTab === tab
                 ? "bg-white text-[#0c1c37] shadow-sm"
                 : "text-gray-500 hover:text-[#0c1c37]"

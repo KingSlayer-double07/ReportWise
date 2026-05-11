@@ -96,12 +96,12 @@ export default function LoginPage() {
 
           {/* Role Selector */}
           <Tabs value={role} onValueChange={(v) => setRole(v as Role)} className="mb-8">
-            <TabsList className="w-full h-11 p-1 bg-muted rounded-xl">
+            <TabsList className="w-full bg-muted rounded-lg border shadow-lg/3" style={{height: "40px"}}>
               {[Role.ADMIN, Role.TEACHER, Role.STUDENT].map((r) => (
                 <TabsTrigger
                   key={r}
                   value={r}
-                  className="rounded-lg font-bold data-active:shadow-sm"
+                  className="rounded-md font-bold data-active:shadow-sm"
                 >
                   {r.charAt(0) + r.slice(1).toLowerCase()}
                 </TabsTrigger>
@@ -123,7 +123,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="pl-10 h-12 rounded-xl"
+                  className="pl-10 h-12 rounded-lg bg-white shadow-lg/5"
                 />
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="pl-10 pr-12 h-12 rounded-xl"
+                  className="pl-10 pr-12 h-12 rounded-lg bg-white shadow-lg/5"
                 />
                 <Button
                   type="button"
@@ -167,7 +167,7 @@ export default function LoginPage() {
               id="login-submit"
               type="submit"
               disabled={loading}
-              className="h-12 rounded-xl font-bold text-base shadow-xl shadow-primary/20 transition-all hover:-translate-y-0.5"
+              className="h-12 rounded-xl font-bold text-base shadow-xl shadow-primary/20 transition-all"
             >
               {loading ? "Signing in…" : "Sign in"}
             </Button>
@@ -177,10 +177,10 @@ export default function LoginPage() {
           <p className="mt-6 text-[13px] text-gray-500 text-center">
             Don&apos;t have an account?{" "}
             <Link
-              href="/sign-up"
+              href="/dashboard/admin"
               className="text-[#0c1c37] font-semibold hover:text-[goldenrod] transition-colors no-underline"
             >
-              Request access
+              Request access &#40;link to dashboard&#41;
             </Link>
           </p>
         </div>
