@@ -42,7 +42,7 @@ export default function NewClassPage() {
       <form onSubmit={handleSubmit} className="space-y-8 pb-20">
         <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-6">
           <h3 className="text-lg font-bold text-[#0c1c37] border-b border-gray-50 pb-4">Basic Details</h3>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
               <label className="text-[13px] font-semibold text-[#0c1c37]">Class Level</label>
               <select required className="w-full px-4 py-2.5 rounded-xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-[#0c1c37]/10">
@@ -83,11 +83,11 @@ export default function NewClassPage() {
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 ml-32 z-50">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 md:ml-32 z-50 w-[90%] md:w-auto">
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 px-10 py-3.5 bg-[#0c1c37] text-white rounded-2xl font-black text-[15px] hover:bg-[goldenrod] transition-all shadow-2xl shadow-[#0c1c37]/40 border-none cursor-pointer"
+            className="flex items-center justify-center gap-2 w-full md:px-10 py-3.5 bg-[#0c1c37] text-white rounded-2xl font-black text-[15px] hover:bg-[goldenrod] transition-all shadow-2xl shadow-[#0c1c37]/40 border-none cursor-pointer"
           >
             {loading ? "Creating..." : (
               <>

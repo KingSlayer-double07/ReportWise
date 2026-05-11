@@ -34,7 +34,7 @@ export default function ScoreEntryPage() {
   return (
     <div className="space-y-6">
       {/* Breadcrumbs & Title */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
         <div className="space-y-1">
           <h1 className="text-2xl font-black text-[#0c1c37] tracking-tight">Score Entry</h1>
           <div className="flex items-center gap-2 text-sm font-bold text-gray-400">
@@ -48,7 +48,7 @@ export default function ScoreEntryPage() {
             setIsSaving(true);
             setTimeout(() => setIsSaving(false), 1500);
           }}
-          className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-2xl font-black text-[15px] hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 border-none cursor-pointer"
+          className="flex w-full md:w-auto items-center justify-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-2xl font-black text-[15px] hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 border-none cursor-pointer"
         >
           {isSaving ? "Saving..." : (
             <>
@@ -95,9 +95,9 @@ export default function ScoreEntryPage() {
       {/* Content Card */}
       <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
         {/* Card Header */}
-        <div className="p-6 flex items-center justify-between border-b border-gray-50">
+        <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 border-b border-gray-50">
           <h2 className="text-lg font-black text-[#0c1c37]">Student Scores</h2>
-          <div className="relative w-64">
+          <div className="relative w-full sm:w-64">
             <input
               type="text"
               placeholder="Search students..."

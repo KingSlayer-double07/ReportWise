@@ -17,7 +17,7 @@ const MOCK_CLASSES = [
 export default function ClassesPage() {
   return (
     <div className="space-y-8 font-dm tracking-tighter">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
         <div>
           <h1 className="text-2xl font-black text-[#0c1c37] tracking-tight">
             Classes & Subjects

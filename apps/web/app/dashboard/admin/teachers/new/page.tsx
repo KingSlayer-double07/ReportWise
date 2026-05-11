@@ -61,7 +61,7 @@ export default function NewTeacherPage() {
 
       <form onSubmit={handleSubmit} className="space-y-8 pb-20">
         {/* Photo Upload */}
-        <div className="bg-white p-8 rounded-lg border border-[#0c1c37]/10 hover:border-[#0c1c37] duration-300 shadow-lg/5 hover:shadow-lg/10 flex items-center gap-8">
+        <div className="bg-white p-8 rounded-lg border border-[#0c1c37]/10 hover:border-[#0c1c37] duration-300 shadow-lg/5 hover:shadow-lg/10 flex flex-col sm:flex-row items-center gap-8 text-center sm:text-left">
           <input
             ref={fileInputRef}
             type="file"
@@ -97,7 +97,7 @@ export default function NewTeacherPage() {
               <button
                 type="button"
                 onClick={clearPhoto}
-                className="mt-2 flex items-center gap-1 text-[12px] text-red-400 hover:text-red-600 transition-colors font-semibold"
+                className="mt-2 flex items-center justify-center sm:justify-start gap-1 text-[12px] text-red-400 hover:text-red-600 transition-colors font-semibold mx-auto sm:mx-0"
               >
                 <X size={12} /> Remove photo
               </button>
@@ -111,7 +111,7 @@ export default function NewTeacherPage() {
         <div className="bg-white p-8 rounded-lg border border-[#0c1c37]/10 hover:border-[#0c1c37] duration-300 shadow-lg/5 hover:shadow-lg/10 space-y-6">
           <h3 className="text-lg font-bold text-[#0c1c37] border-b border-gray-50 pb-4">Basic Information</h3>
           
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
               <label className="text-[13px] font-semibold text-[#0c1c37]">First Name</label>
               <input required type="text" className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border-none outline-none focus:ring focus:ring-[#0c1c37]/10" />
@@ -127,7 +127,7 @@ export default function NewTeacherPage() {
             <input required type="email" className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border-none outline-none focus:ring focus:ring-[#0c1c37]/10" />
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
               <label className="text-[13px] font-semibold text-[#0c1c37]">Staff ID</label>
               <input placeholder="e.g. ST/2024/042" required type="text" className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border-none outline-none focus:ring focus:ring-[#0c1c37]/10" />
@@ -142,10 +142,10 @@ export default function NewTeacherPage() {
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 ml-32 z-50">
+        <div className="fixed bottom-8 left-1/2 md:left-auto -translate-x-1/2 md:translate-x-0 md:right-0 md:mr-8 md:ml-32 z-50 w-[90%] md:w-auto">
           <ActionButton
             type="submit"
-            className="px-10 py-4 text-[15px] shadow-2xl shadow-[#0c1c37]/40"
+            className="w-full md:w-auto px-10 py-4 text-[15px] shadow-2xl shadow-[#0c1c37]/40 flex justify-center"
             icon={Save}
           >
             {loading ? "Creating..." : "Create Teacher Account"}

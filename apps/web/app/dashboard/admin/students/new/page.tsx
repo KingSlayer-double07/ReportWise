@@ -61,7 +61,7 @@ export default function NewStudentPage() {
 
       <form onSubmit={handleSubmit} className="space-y-8 pb-20">
         {/* Photo Upload */}
-        <div className="bg-white p-8 rounded-lg border border-[#0c1c37]/10 hover:border-[#0c1c37] duration-300 shadow-lg/5 hover:shadow-lg/10 flex items-center gap-8">
+        <div className="bg-white p-8 rounded-lg border border-[#0c1c37]/10 hover:border-[#0c1c37] duration-300 shadow-lg/5 hover:shadow-lg/10 flex flex-col sm:flex-row items-center gap-8 text-center sm:text-left">
           <input
             ref={fileInputRef}
             type="file"
@@ -97,7 +97,7 @@ export default function NewStudentPage() {
               <button
                 type="button"
                 onClick={clearPhoto}
-                className="mt-2 flex items-center gap-1 text-[12px] text-red-400 hover:text-red-600 transition-colors font-semibold"
+                className="mt-2 flex items-center justify-center sm:justify-start gap-1 text-[12px] text-red-400 hover:text-red-600 transition-colors font-semibold mx-auto sm:mx-0"
               >
                 <X size={12} /> Remove photo
               </button>
@@ -194,10 +194,10 @@ export default function NewStudentPage() {
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 ml-32 z-50">
+        <div className="fixed bottom-8 left-1/2 md:left-auto -translate-x-1/2 md:translate-x-0 md:right-0 md:mr-8 md:ml-32 z-50 w-[90%] md:w-auto">
           <ActionButton
             type="submit"
-            className="px-10 py-4 text-[15px] shadow-2xl shadow-[#0c1c37]/40"
+            className="w-full md:w-auto px-10 py-4 text-[15px] shadow-2xl shadow-[#0c1c37]/40 flex justify-center"
             icon={Save}
           >
             {loading ? "Registering..." : "Register Student"}
