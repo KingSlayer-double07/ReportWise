@@ -46,9 +46,9 @@ export default function NewTeacherPage() {
   return (
     <div className="mx-auto space-y-8 font-dm tracking-tighter">
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/admin/teachers" className="w-10 h-10 rounded-lg bg-white border border-gray-100 flex items-center justify-center text-[#0c1c37] hover:bg-gray-50 transition-all no-underline shadow-lg/5">
+        <button onClick={() => router.back()} className="w-10 h-10 rounded-lg bg-white border border-gray-100 flex items-center justify-center text-[#0c1c37] hover:bg-gray-50 transition-all no-underline shadow-lg/5">
           <ArrowLeft size={20} />
-        </Link>
+        </button>
         <div>
           <h1 className="text-2xl font-black text-[#0c1c37] tracking-tight">
             Add New Teacher

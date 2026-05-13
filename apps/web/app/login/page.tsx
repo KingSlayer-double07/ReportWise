@@ -50,9 +50,11 @@ export default function LoginPage() {
     setTimeout(() => {
       login("mock_token", {
         id: "1",
-        name: role === Role.ADMIN ? "Admin User" : role === Role.TEACHER ? "Teacher User" : "Student User",
         email,
         role: role,
+        mustChangePassword: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
       setLoading(false);
     }, 1500);
@@ -177,7 +179,7 @@ export default function LoginPage() {
           <p className="mt-6 text-[13px] text-gray-500 text-center">
             Don&apos;t have an account?{" "}
             <Link
-              href="/dashboard/admin"
+              href="/admin"
               className="text-[#0c1c37] font-semibold hover:text-[goldenrod] transition-colors no-underline"
             >
               Request access &#40;link to dashboard&#41;

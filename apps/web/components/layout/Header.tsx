@@ -42,7 +42,7 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
         <div className="flex items-center gap-3">
           <div className="text-right hidden sm:block">
             <p className="text-[14px] font-bold text-[#0c1c37] leading-none mb-1">
-              {user?.name}
+              {user?.email || "User"}
             </p>
             <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
               {user?.role}

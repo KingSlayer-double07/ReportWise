@@ -1,65 +1,75 @@
 "use client";
-
 import React, { createContext, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Role } from "@reportwise/shared";
-
-interface User {
-  id: string;
-  email?: string;
-  name: string;
-  role: Role;
-}
+import { Role, User } from "@reportwise/shared"; // ← User moved to shared
+import { getDashboardRoute } from "@/lib/auth"; // ← extracted helper
+import { jwtDecode } from "jwt-decode";
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (token: string, user: User) => void;
+  login: (token: string, user: User) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+}
+
+function isTokenExpired(token: string): boolean {
+  try {
+    const { exp } = jwtDecode<{ exp: number }>(token);
+    return Date.now() >= exp * 1000;
+  } catch {
+    return true;
+  }
+}
+
+function getInitialUser(): User | null {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem("rw_user");
+  try {
+    if (stored) return JSON.parse(stored);
+  } catch {
+    localStorage.removeItem("rw_user");
+  }
+  if (process.env.NODE_ENV === "development") {
+    return {
+      id: "1",
+      role: Role.ADMIN,
+      email: "test@dev.com",
+      mustChangePassword: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  }
+  return null;
+}
+
+function getInitialToken(): string | null {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem("rw_token");
+  if (stored && !isTokenExpired(stored)) return stored;
+  if (stored) localStorage.removeItem("rw_token");
+  return process.env.NODE_ENV === "development" ? "mock_token" : null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // const [user, setUser] = useState<User | null>(null);
-  // const [token, setToken] = useState<string | null>(null);
-  // const [isLoading, setIsLoading] = useState(true);
-
-  const [user, setUser] = useState<User | null>(() => {
-    const storedUser = typeof window !== "undefined" ? localStorage.getItem("rw_user") : null;
-    return storedUser
-      ? JSON.parse(storedUser)
-      : {
-          id: "1",
-          name: "Preview User",
-          role: Role.ADMIN, // Change this to Role.TEACHER to see the teacher view
-        };
-  });
-  const [token, setToken] = useState<string | null>(() => {
-    const storedToken = typeof window !== "undefined" ? localStorage.getItem("rw_token") : null;
-    return storedToken || "mock_token";
-  });
-  const [isLoading, setIsLoading] = useState(false); // Set to false so it doesn't show the spinner
-
+  const [user, setUser] = useState<User | null>(getInitialUser);
+  const [token, setToken] = useState<string | null>(getInitialToken);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const login = (newToken: string, newUser: User) => {
+  const login = async (newToken: string, newUser: User) => {
     setIsLoading(true);
-    setToken(newToken);
-    setUser(newUser);
-    localStorage.setItem("rw_token", newToken);
-    localStorage.setItem("rw_user", JSON.stringify(newUser));
-
-    // Redirect based on role
-    if (newUser.role === Role.ADMIN || newUser.role === Role.SUPER_ADMIN) {
-      router.push("/dashboard/admin");
-    } else if (newUser.role === Role.TEACHER) {
-      router.push("/dashboard/teacher");
-    } else {
-      router.push("/dashboard/student");
+    try {
+      setToken(newToken);
+      setUser(newUser);
+      localStorage.setItem("rw_token", newToken);
+      localStorage.setItem("rw_user", JSON.stringify(newUser));
+      await router.push(getDashboardRoute(newUser.role));
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const logout = () => {
