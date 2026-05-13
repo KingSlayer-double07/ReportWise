@@ -39,7 +39,7 @@ export default function ConfigPage() {
 
   return (
     <div className="space-y-8 font-dm tracking-tighter">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
         <div>
           <h1 className="text-2xl font-black text-[#0c1c37] tracking-tight">
             School Configuration
@@ -53,13 +53,13 @@ export default function ConfigPage() {
         </ActionButton>
       </div>
 
-      <div className="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit">
+      <div className="flex flex-wrap md:flex-nowrap gap-1 p-1 bg-gray-100 rounded-xl w-full md:w-fit">
         {["grading", "terms", "structure"].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={cn(
-              "px-8 py-2.5 rounded-lg text-[14px] font-bold transition-all border-none cursor-pointer",
+              "px-8 py-2 rounded-lg text-[14px] font-bold transition-all border-none cursor-pointer",
               activeTab === tab
                 ? "bg-white text-[#0c1c37] shadow-sm"
                 : "text-gray-500 hover:text-[#0c1c37]"
@@ -111,7 +111,7 @@ export default function ConfigPage() {
                 </button>
               </div>
               
-              <div className="border border-gray-100 rounded-2xl overflow-hidden">
+              <div className="border border-gray-100 rounded-2xl overflow-x-auto">
                 <table className="w-full text-left">
                   <thead className="bg-gray-50 border-b border-gray-100">
                     <tr>

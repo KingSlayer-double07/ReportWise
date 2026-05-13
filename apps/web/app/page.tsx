@@ -21,8 +21,8 @@ export default function Home() {
         <HowItWorks />
         {/* <Integrations /> */}
         <Testimonial />
-        <Stats />
-        {/* <Pricing /> */}
+        {/* <Stats /> */}
+        <Pricing />
         <CTABanner />
       </main>
       <Footer />

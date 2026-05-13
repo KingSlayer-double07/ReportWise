@@ -17,24 +17,24 @@ import {
 } from "lucide-react";
 
 const ADMIN_LINKS = [
-  { href: "/dashboard/admin", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/admin/students", label: "Students", icon: Users },
-  { href: "/dashboard/admin/teachers", label: "Teachers", icon: GraduationCap },
-  { href: "/dashboard/admin/classes", label: "Classes & Subjects", icon: BookOpen },
-  { href: "/dashboard/admin/config", label: "School Config", icon: Settings },
+  { href: "/admin", label: "Overview", icon: LayoutDashboard },
+  { href: "/admin/students", label: "Students", icon: Users },
+  { href: "/admin/teachers", label: "Teachers", icon: GraduationCap },
+  { href: "/admin/classes", label: "Classes & Subjects", icon: BookOpen },
+  { href: "/admin/config", label: "School Config", icon: Settings },
 ];
 
 const TEACHER_LINKS = [
-  { href: "/dashboard/teacher", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/teacher/scores", label: "Score Entry", icon: ClipboardCheck },
+  { href: "/teacher", label: "Overview", icon: LayoutDashboard },
+  { href: "/teacher/scores", label: "Score Entry", icon: ClipboardCheck },
 ];
 
 const STUDENT_LINKS = [
-  { href: "/dashboard/student", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/student/results", label: "My Results", icon: BookOpen },
+  { href: "/student", label: "Overview", icon: LayoutDashboard },
+  { href: "/student/results", label: "My Results", icon: BookOpen },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isOpen, setIsOpen }: { isOpen?: boolean, setIsOpen?: (val: boolean) => void }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
 
@@ -45,8 +45,11 @@ export function Sidebar() {
     : STUDENT_LINKS;
 
   return (
-    <div className="w-64 h-screen bg-white border-r border-gray-100 flex flex-col p-6 fixed left-0 top-0 z-50 font-dm">
-      <Link href="/dashboard" className="flex items-center gap-2.5 no-underline mb-10">
+    <div className={cn(
+      "w-64 h-screen bg-white border-r border-gray-100 flex flex-col p-6 fixed left-0 top-0 z-50 font-dm transition-transform duration-300",
+      isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+    )}>
+      <Link href="/" className="flex items-center gap-2.5 no-underline mb-10">
         <LogoMark />
         <span className="font-extrabold text-xl text-[#0c1c37] tracking-tight">
           Report<span className="text-[goldenrod]">Wise</span>
@@ -60,6 +63,7 @@ export function Sidebar() {
             <Link
               key={link.href}
               href={link.href}
+              onClick={() => setIsOpen?.(false)}
               className={cn(
                 "group flex items-center gap-3 px-4 py-3 rounded-md text-[14.5px] font-semibold font-dm transition-all relative",
                 isActive 

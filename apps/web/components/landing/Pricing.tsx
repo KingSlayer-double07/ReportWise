@@ -7,6 +7,21 @@ export default function Pricing() {
     <section id="pricing" className="py-20 px-6 bg-white">
       <div className="max-w-[1100px] mx-auto">
         {/* Header */}
+
+                <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 bg-[goldenrod]/10 border border-[goldenrod]/25 rounded-full px-3.5 py-1.5 mb-5">
+            <span className="font-sans text-[11px] font-semibold text-[goldenrod] tracking-[0.05em] uppercase">
+              ✦ Simple Pricing
+            </span>
+          </div>
+
+          {/* h2 keeps project font (font-mono base) */}
+          <h2 className="text-4xl font-black tracking-[-2px] text-[#0c1c37] mb-0 font-dm">
+            Pay only for active students
+          </h2>
+        </div>
+
+{/*         
         <div className="text-center mb-14">
           <div className="inline-flex items-center gap-2 bg-[#0c1c37]/[0.06] border border-[#0c1c37]/[0.12] rounded-full px-3.5 py-1.5 mb-5">
             <span className="text-[11px] font-bold text-[#0c1c37] tracking-[0.05em] uppercase">
@@ -20,7 +35,7 @@ export default function Pricing() {
             No flat fees. No surprises. You&apos;re billed per active student per
             session — fair and scalable.
           </p>
-        </div>
+        </div> */}
 
         {/* Plans grid */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-5 items-start">
