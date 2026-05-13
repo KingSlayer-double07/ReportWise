@@ -174,7 +174,7 @@ export default function TeachersPage() {
           />
         </div>
       </div>
-      <ConfirmModal 
+      {/* <ConfirmModal 
         isOpen={modalType === 'delete' || modalType === 'bulkDelete'} 
         onClose={() => { setModalType(null); setActiveTeacherId(null); }} 
         onConfirm={handleDelete} 
@@ -182,7 +182,7 @@ export default function TeachersPage() {
         description={modalType === 'bulkDelete' ? `You are about to delete ${selectedIds.size} teachers. This action cannot be undone.` : 'This will permanently remove this teacher record. Are you sure you want to proceed?'} 
         confirmText="Yes, delete" 
         confirmVariant="danger" 
-      />
+      /> */}
     </div>
   );
 }

@@ -63,12 +63,12 @@ const BillingBanner = ({ status, endDate }: { status: SubscriptionStatus, endDat
 const QuickAction = ({ icon: Icon, label, color, onClick }: any) => (
   <button 
     onClick={onClick}
-    className="flex flex-col items-center justify-center p-4 bg-white border border-slate-200 rounded-xl hover:shadow-lg hover:border-blue-200 transition-all group active:scale-95"
+    className="flex flex-col items-center justify-center p-4 bg-white border border-slate-200 rounded-md shadow-lg/3 hover:shadow-lg/5 hover:border-blue-200 duration-300"
   >
-    <div className={`p-4 rounded-2xl mb-3 group-hover:scale-110 transition-transform shadow-sm ${color}`}>
+    <div className={`p-4 rounded-2xl mb-3 transition-transform shadow-sm ${color}`}>
       <Icon size={24} className="text-white" />
     </div>
-    <span className="text-xs font-bold text-slate-700 group-hover:text-blue-600">{label}</span>
+    <span className="text-xs font-bold text-slate-700">{label}</span>
   </button>
 );
 
@@ -87,11 +87,11 @@ const ClassCard = ({ prog, onClick }: { prog: ClassProgress, onClick: () => void
   return (
     <div 
       onClick={onClick}
-      className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer group hover:border-blue-100"
+      className="bg-white p-5 rounded-lg border border-slate-200 shadow-lg/3 hover:shadow-lg/5 duration-300 cursor-pointer hover:border-blue-100"
     >
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h4 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{prog.name}</h4>
+          <h4 className="text-lg font-bold text-slate-900 transition-colors">{prog.name}</h4>
           <p className="text-[11px] text-slate-500 font-medium mt-1">{prog.studentCount} students • {prog.teacher}</p>
         </div>
         <div className="text-right">
@@ -237,7 +237,7 @@ export default function AdminDashboard() {
               </div>
             </section>
 
-            <section className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
+            <section className="bg-white p-8 rounded-lg border border-slate-200 shadow-lg/3 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity pointer-events-none">
                 <TrendingUp size={160} />
               </div>
@@ -251,7 +251,7 @@ export default function AdminDashboard() {
                 </div>
                 <button 
                 //   onClick={() => setShowTermModal(true)}
-                  className="px-6 py-3 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-slate-800 transition-all shadow-xl active:scale-95 whitespace-nowrap"
+                  className="px-6 py-3 bg-slate-900 text-white rounded-md text-sm font-bold hover:bg-slate-800 transition-all shadow-xl active:scale-95 whitespace-nowrap"
                 >
                   Change Active Term
                 </button>
@@ -275,7 +275,7 @@ export default function AdminDashboard() {
 
           {/* Activity Feed */}
           <div className="lg:col-span-1">
-            <section className="bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
+            <section className="bg-white rounded-lg border border-slate-200 shadow-lg/3 flex flex-col h-full overflow-hidden">
               <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10">
                 <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest flex items-center gap-2">
                   <Activity size={16} className="text-blue-500" />
